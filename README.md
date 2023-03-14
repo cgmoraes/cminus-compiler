@@ -1,2 +1,2 @@
 # cminus-compiler
- Cminus Compiler
+ C- Compiler
