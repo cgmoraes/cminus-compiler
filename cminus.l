@@ -13,9 +13,9 @@ char tokenString[MAXTOKENLEN + 1];
 %}
 
 digito         [0-9]
-numero         {digito}+
 letra          ([a-z]|[A-Z])
-identificador  {letra}+
+numero         {digito}+
+identificador  {letra}+{digito}*
 novalinha      \n
 espacobranco   [ \t\r]+
 
@@ -55,7 +55,7 @@ espacobranco   [ \t\r]+
       int line=lineno;
       while (1) {
         c = input();
-        if (c == 0) return ACOM;
+        if (c == ENDFILE) return ACOM;
         if (c == '\n') line++;
         while ((c = input()) == '*');
         if (c == '/') break;

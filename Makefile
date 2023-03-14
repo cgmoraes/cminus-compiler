@@ -12,8 +12,10 @@ BSN = bison
 
 OBJS = main.o cminus.tab.o lex.yy.o util.o # symtab.o analyze.o code.o cgen.o 
 
+all: cminus clean
+
 cminus: $(OBJS)
-	$(CC) $(OBJS) -o cminus
+	$(CC) $(OBJS) -o cmc
 
 main.o: main.c globals.h util.h scan.h parse.h analyze.h cgen.h
 	$(CC) -c main.c
@@ -42,10 +44,10 @@ util.o: util.c util.h globals.h
 # 	$(CC) -c cgen.c
 
 clean:
-	-rm cminus
-	-rm tm
-	-rm $(OBJS)
+	-rm tm $(OBJS) lex.yy.c cminus.tab.c
 
-tm: tm.c
-	$(CC) tm.c -o tm
+.PHONY: all
+
+# tm: tm.c
+# 	$(CC) tm.c -o tm
 
