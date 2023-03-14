@@ -1,0 +1,7 @@
+main.o 
+cminus.tab.o
+lex.yy.o util.o
+symtab.o
+analyze.o
+code.o
+cgen.o 
