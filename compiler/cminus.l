@@ -15,7 +15,7 @@ char tokenString[MAXTOKENLEN + 1];
 digito         [0-9]
 letra          ([a-z]|[A-Z])
 numero         {digito}+
-identificador  {letra}+{digito}*
+identificador  {letra}+[_]*{digito}*[_]*
 novalinha      \n
 espacobranco   [ \t\r]+
 

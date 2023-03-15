@@ -47,8 +47,8 @@ int Error = FALSE;
 
 int main( int argc, char * argv[] )
 { TreeNode * syntaxTree;
-  char pgm[120]; /* source code file name */
-  if (argc != 2)
+  char pgm[120], fout[120]; /* source code file name */
+  if (argc < 2)
     { fprintf(stderr,"usage: %s <filename>\n",argv[0]);
       exit(1);
     }
@@ -60,7 +60,10 @@ int main( int argc, char * argv[] )
   { fprintf(stderr,"File %s not found\n",pgm);
     exit(1);
   }
-  listing = stdout; /* send listing to screen */
+  if ((argc == 4) && (!strcmp(argv[2], "-o"))) strcpy(fout,argv[3]);
+  else strcpy(fout,"a");
+  strcat(fout,".out");
+  listing = fopen(fout, "w"); /* send listing to screen */
   fprintf(listing,"\nCMINUS COMPILATION: %s\n",pgm);
 #if NO_PARSE
   while (getToken()!=ENDFILE);

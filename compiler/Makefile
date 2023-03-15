@@ -10,21 +10,23 @@ FLX = flex
 
 BSN = bison
 
+TMP = lex.yy.c cminus.tab.c cminus.tab.h
+
 OBJS = main.o cminus.tab.o lex.yy.o util.o # symtab.o analyze.o code.o cgen.o 
 
 all: cminus clean
 
 cminus: $(OBJS)
-	$(CC) $(OBJS) -o cmc
+	$(CC) $(OBJS) -lfl -o cmc
 
-main.o: main.c globals.h util.h scan.h parse.h analyze.h cgen.h
+main.o: cminus.tab.o lex.yy.o main.c globals.h util.h scan.h parse.h analyze.h cgen.h
 	$(CC) -c main.c
 
-cminus.tab.o: parse.h scan.h globals.h util.h
+cminus.tab.o: cminus.y parse.h scan.h globals.h util.h
 	$(BSN) -d cminus.y
 	$(CC) -c cminus.tab.c
 
-lex.yy.o: scan.h util.h globals.h
+lex.yy.o: cminus.l scan.h util.h globals.h
 	$(FLX) cminus.l
 	$(CC) -c lex.yy.c
 
@@ -43,11 +45,10 @@ util.o: util.c util.h globals.h
 # cgen.o: cgen.c globals.h symtab.h code.h cgen.h
 # 	$(CC) -c cgen.c
 
-clean:
-	-rm tm $(OBJS) lex.yy.c cminus.tab.c
-
-.PHONY: all
-
 # tm: tm.c
 # 	$(CC) tm.c -o tm
+
+clean:
+	-rm tm $(OBJS) $(TMP)
+
 
