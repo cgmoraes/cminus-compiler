@@ -79,8 +79,8 @@ typedef struct treeNode
      union { StmtKind stmt; ExpKind exp;} kind;
      struct { TokenType op;
              int val;
-             char * name;
              int len;
+             char * name;
              char * scope; } attr;
      ExpType type; /* for type checking of exps */
    } TreeNode;

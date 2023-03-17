@@ -62,6 +62,7 @@ TreeNode * newStmtNode(StmtKind kind)
     t->nodekind = StmtK;
     t->kind.stmt = kind;
     t->lineno = lineno;
+    t->attr.scope = "global";
   }
   return t;
 }
@@ -81,6 +82,7 @@ TreeNode * newExpNode(ExpKind kind)
     t->kind.exp = kind;
     t->lineno = lineno;
     t->type = VoidK;
+    t->attr.scope = "global";
   }
   return t;
 }
@@ -181,4 +183,16 @@ void printTree( TreeNode * tree )
     tree = tree->sibling;
   }
   UNINDENT;
+}
+
+void addScope(TreeNode *t, char *scope)
+{
+  int i;
+  while (t != NULL){
+    for (i = 0; i < MAXCHILDREN; ++i){
+      t->attr.scope = scope;
+      addScope(t->child[i], scope);
+    }
+    t = t->sibling;
+  }
 }

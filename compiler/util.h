@@ -8,6 +8,8 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
+void addScope(TreeNode *t, char *scope);
+
 /* Procedure printToken prints a token 
  * and its lexeme to the listing file
  */

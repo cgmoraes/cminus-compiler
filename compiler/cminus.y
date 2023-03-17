@@ -76,6 +76,8 @@ fun_decl : INT ident EPAREN params DPAREN comp_decl
                   $2->kind.stmt = FunK;
                   $2->type = IntegerK;
                   $4->type = IntegerK;
+                  addScope($2->child[0], $2->attr.name);
+                  addScope($2->child[1], $2->attr.name);
                 }
                 | VOID ident EPAREN params DPAREN comp_decl
                 {
@@ -87,6 +89,8 @@ fun_decl : INT ident EPAREN params DPAREN comp_decl
                   $2->child[1] = $6;
                   $2->nodekind = StmtK;
                   $2->kind.stmt = FunK;
+                  addScope($2->child[0], $2->attr.name);
+                  addScope($2->child[1], $2->attr.name);
                 }
                ;
 params : param_lista {$$ = $1;}
@@ -144,15 +148,15 @@ comp_decl : ECHAVE local_decl stmt_lista DCHAVE
                 } 
                 else $$ = $3;
               }
-              | ECHAVE local_decl DCHAVE //pois podem ser vazio
+              | ECHAVE local_decl DCHAVE 
               {
                 $$ = $2;
               }
-              | ECHAVE stmt_lista DCHAVE //pois podem ser vazio
+              | ECHAVE stmt_lista DCHAVE
               {
                 $$ = $2;
               }
-              | ECHAVE DCHAVE {}            //pois podem ser vazio
+              | ECHAVE DCHAVE {}            
               ;
 local_decl : local_decl var_decl 
                   {
@@ -167,7 +171,6 @@ local_decl : local_decl var_decl
                   {
                     $$ = $1;
                   }
-                   /* vazio, apaguei pois estava dando erro :/ */
                   ;
 stmt_lista : stmt_lista stmt 
                 {
@@ -183,7 +186,6 @@ stmt_lista : stmt_lista stmt
                   {
                     $$ = $1;
                   }
-                /* vazio, apaguei pois estava dando erro :/ */
                 ;
 stmt : exp_decl
           {
