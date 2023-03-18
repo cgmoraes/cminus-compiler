@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtab.h"
+#include "globals.h"
 
 /* SIZE is the size of the hash table */
 #define SIZE 211
@@ -42,8 +43,27 @@ static int scopeHash ( char * key )
   return temp;
 }
 
+static char * scopes[SIZE];
+static int pos; 
+
+void createScopeList(){
+  pos = 0;
+}
+
 /* the hash table */
 static BucketList hashTable[SIZE][SIZE];
+
+static void checkScopes(char* scope) 
+{
+  int i;
+  for (i = 0; i < pos; i++) {
+    if (!strcmp(scopes[i], scope))
+      return;
+  }
+  scopes[pos] = malloc(strlen(scope) + 1);
+  strcpy(scopes[pos], scope);
+  pos++;
+}
 
 /* Procedure st_insert inserts line numbers and
  * memory locations into the symbol table
@@ -51,7 +71,9 @@ static BucketList hashTable[SIZE][SIZE];
  * first time, otherwise ignored
  */
 void st_insert( BucketList l, char * scope, char * name, int lineno, int loc )
-{ int row = (!strcmp(scope, "global")) ? 0: scopeHash(scope);
+{ 
+  checkScopes(scope);
+  int row = (!strcmp(scope, "global")) ? 0: scopeHash(scope);
   int col = hash(name);
   if (l == NULL) /* variable not yet in table */
   { l = (BucketList) malloc(sizeof(struct BucketListRec));
@@ -107,10 +129,11 @@ void printSymTab(FILE * listing)
 { int i, j;
   fprintf(listing,"Variable Name  Scope       Location   Line Numbers\n");
   fprintf(listing,"-------------  ----------  --------   ------------\n");
-  for (i=0;i<SIZE;++i){
+  for (i=0;i<pos;++i){
+    int row = (!strcmp(scopes[i], "global")) ? 0: scopeHash(scopes[i]);
     for (j=0;j<SIZE;++j)
-    { if (hashTable[i][j] != NULL)
-      { BucketList l = hashTable[i][j];
+    { if (hashTable[row][j] != NULL)
+      { BucketList l = hashTable[row][j];
         while (l != NULL)
         { LineList t = l->lines;
           fprintf(listing,"%-14s ",l->name);

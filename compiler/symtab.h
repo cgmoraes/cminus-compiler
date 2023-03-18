@@ -31,6 +31,8 @@ typedef struct BucketListRec
      struct BucketListRec * next;
    } * BucketList;
 
+void createScopeList();
+
 /* Procedure st_insert inserts line numbers and
  * memory locations into the symbol table
  * loc = memory location is inserted only the
@@ -50,5 +52,6 @@ BucketList st_lookup ( char * scope, char * name );
  * to the listing file
  */
 void printSymTab(FILE * listing);
+
 
 #endif

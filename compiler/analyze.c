@@ -188,6 +188,7 @@ static void traverseCheckNode(TreeNode *t)
  */
 void buildSymtab(TreeNode * syntaxTree)
 {
+  createScopeList();
   traverseInsertNode(syntaxTree);
   if (TraceAnalyze)
   { fprintf(listing,"\nSymbol table:\n\n");
