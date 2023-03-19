@@ -18,6 +18,40 @@ static void typeError(TreeNode * t, char * message)
   Error = TRUE;
 }
 
+/* Procedure traverse is a generic recursive
+ * syntax tree traversal routine:
+ * it applies preProc in preorder and postProc
+ * in postorder to tree pointed to by t
+ */
+static void traverse(TreeNode *t,
+                     void (*preProc)(TreeNode *),
+                     void (*postProc)(TreeNode *))
+{
+    if (t != NULL)
+    {
+        preProc(t);
+        {
+            int i;
+            for (i = 0; i < MAXCHILDREN; i++)
+                traverse(t->child[i], preProc, postProc);
+        }
+        postProc(t);
+        traverse(t->sibling, preProc, postProc);
+    }
+}
+
+/* nullProc is a do-nothing procedure to
+ * generate preorder-only or postorder-only
+ * traversals from traverse
+ */
+static void nullProc(TreeNode *t)
+{
+    if (t == NULL)
+        return;
+    else
+        return;
+}
+
 /* Procedure insertNode inserts 
  * identifiers stored in t into 
  * the symbol table 
@@ -30,9 +64,9 @@ static void insertNode( TreeNode * t)
         {
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
           if (l == NULL) {
-            if (t->type == VoidK)typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
-            else if (!strcmp(t->attr.scope, t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
-            else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
+            
+            if (!strcmp(t->attr.scope, t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
+            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
           
           } else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
@@ -40,7 +74,7 @@ static void insertNode( TreeNode * t)
       case FunK:
         {
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
-          if (l == NULL) st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
+          if (l == NULL) st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
           else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
         break;
@@ -50,10 +84,11 @@ static void insertNode( TreeNode * t)
           if (l == NULL){
             if (strcmp(t->attr.name, "input") != 0 & strcmp(t->attr.name, "output") != 0)
               typeError(t, "Error 5: Invalid call. Not declared.");
-          } else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
+          } else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
         }
         break;
       case ReturnK:
+          // if (!strcmp(t->attr.scope,"global")) typeError(t, "Error 5: Invalid return. Function not declared.");
         break;
       default:
         break;
@@ -65,27 +100,16 @@ static void insertNode( TreeNode * t)
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
             if (l == NULL) typeError(t, "Error 1: Not declared");
-            else st_insert(l, t->attr.scope, t->attr.name, t->lineno, 0);
+            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
           } 
           break;
         case ArrK:
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
             if (l == NULL) typeError(t, "Error 1: Not declared");
-            else st_insert(l, t->attr.scope, t->attr.name, t->lineno, 0);
+            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
           }
           break;
-        // case ParK:
-        //   {
-        //     BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
-        //     if (l == NULL) {
-        //       if (t->type == VoidK)typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
-        //       else if (!strcmp(t->attr.scope, t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
-        //       else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
-            
-        //     } else typeError(t, "Error 4: Invalid declaration. Already declared.");
-        //   }
-        //   break;
         case TypeK:
           break;
         default:
@@ -102,37 +126,31 @@ static void insertNode( TreeNode * t)
  */
 static void checkNode(TreeNode * t)
 { switch (t->nodekind)
-  { case ExpK:
-      switch (t->kind.exp)
-      { case OpK:
-          if ((t->child[0]->type != IntegerK) ||
-              (t->child[1]->type != IntegerK))
-            typeError(t,"Op applied to non-integer");
-          if ((t->attr.op == IGUAL) || (t->attr.op == MENORQ))
-            t->type = BooleanK;
-          else
-            t->type = IntegerK;
-          break;
-        case ConstK:
-        case IdK:
-          t->type = IntegerK;
-          break;
-        default:
-          break;
-      }
-      break;
-    case StmtK:
+  { case StmtK:
       switch (t->kind.stmt)
-      { case IfK:
-          if (t->child[0]->type == IntegerK)
-            typeError(t->child[0],"if test is not Boolean");
+      { case VarK:
+          if (t->type == VoidK) typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
+          break;
+        case IfK:
+          if (t->child[0]->kind.stmt == AssignK) typeError(t->child[0],"if test is not Boolean");
           break;
         case AssignK:
-          if (t->child[0]->type != IntegerK)
-            typeError(t->child[0],"assignment of non-integer value");
+          {
+            BucketList l = st_lookup(t->child[1]->attr.scope, t->child[1]->attr.name);
+            if (t->child[1]->kind.stmt == CallK && 
+            !strcmp(l->type, "void")) typeError(t->child[1], "Error 2: Invalid assignment. Assignment of void return.");
+          }
           break;
         default:
           break;
+        case ReturnK:
+        {
+          BucketList l = st_lookup(t->attr.scope, t->attr.scope);
+          if (!strcmp(l->type,"inteiro") && 
+          t->child[0] == NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+          else if (!strcmp(l->type,"void") && 
+          t->child[0] != NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+        }
       }
       break;
     default:
@@ -141,41 +159,12 @@ static void checkNode(TreeNode * t)
   }
 }
 
-static void traverseInsertNode(TreeNode *t)
-{
-  if (t != NULL)
-  {
-    insertNode(t);
-    {
-      int i;
-      for (i = 0; i < MAXCHILDREN; i++)
-        traverseInsertNode(t->child[i]);
-    }
-    traverseInsertNode(t->sibling);
-  }
-}
-
-
-static void traverseCheckNode(TreeNode *t)
-{
-  if (t != NULL)
-  {
-    {
-      int i;
-      for (i = 0; i < MAXCHILDREN; i++)
-        traverseCheckNode(t->child[i]);
-    }
-    checkNode(t);
-    traverseCheckNode(t->sibling);
-  }
-}
-
 /* Function buildSymtab constructs the symbol 
  * table by preorder traversal of the syntax tree
  */
 void buildSymtab(TreeNode * syntaxTree)
 {
-  traverseInsertNode(syntaxTree);
+  traverse(syntaxTree, insertNode, nullProc);
   if (TraceAnalyze)
   { fprintf(listing,"\nSymbol table:\n\n");
     printSymTab(listing);
@@ -186,5 +175,5 @@ void buildSymtab(TreeNode * syntaxTree)
  * by a postorder syntax tree traversal
  */
 void typeCheck(TreeNode * syntaxTree)
-{ traverseCheckNode(syntaxTree);
+{ traverse(syntaxTree, nullProc, checkNode);
 }

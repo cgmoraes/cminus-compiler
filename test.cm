@@ -1,4 +1,10 @@
-void main(void){
+int main(void){
     int i;
+    return 2;
+}
+
+int sort(void){
+    int i;
+    i = main();
 }
 

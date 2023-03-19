@@ -51,6 +51,7 @@ var_decl : tipo_espec ident PONVIR
                 $2->nodekind = StmtK;
                 $2->kind.stmt = VarK;
                 $2->type = $1->type;
+                $2->attr.type = $1->attr.name;
 						  }
                | tipo_espec ident ECOLCH num DCOLCH PONVIR
                 {
@@ -62,6 +63,7 @@ var_decl : tipo_espec ident PONVIR
                   $2->kind.stmt = VarK;
                   $2->type = $1->type;
                   $2->attr.len = $4->attr.val;
+                  $2->attr.type = $1->attr.name;
                 }
                 ;
 fun_decl : tipo_espec ident EPAREN params DPAREN comp_decl
@@ -75,6 +77,7 @@ fun_decl : tipo_espec ident EPAREN params DPAREN comp_decl
                   $2->nodekind = StmtK;
                   $2->kind.stmt = FunK;
                   $2->type = $1->type;
+                  $2->attr.type = $1->attr.name;
                   addScope($2->child[0], $2->attr.name);
                   addScope($2->child[1], $2->attr.name);
                 }
@@ -121,6 +124,7 @@ param : tipo_espec ident
         $2->nodekind = StmtK;
         $2->kind.stmt = VarK;
         $2->type = $1->type;
+        $2->attr.type = $1->attr.name;
       }
       | tipo_espec ident ECOLCH DCOLCH
       {
@@ -132,6 +136,7 @@ param : tipo_espec ident
         $2->kind.stmt = VarK;
         $2->type = $1->type;
         $2->attr.len = -1;
+        $2->attr.type = $1->attr.name;
       }
       | tipo_espec ident ECOLCH num DCOLCH
       {
@@ -143,6 +148,7 @@ param : tipo_espec ident
       $2->kind.stmt = VarK;
       $2->type = $1->type;
       $2->attr.len = $4->attr.val;
+      $2->attr.type = $1->attr.name;
       }
       ;
 comp_decl : ECHAVE local_decl stmt_lista DCHAVE
@@ -260,6 +266,13 @@ exp : var RECEBE exp
             $$->child[0] = $1;
             $$->child[1] = $3;
           }
+          | var RECEBE ativ
+          {
+            $$ = newStmtNode(AssignK);
+            $$->attr.name = $1->attr.name;
+            $$->child[0] = $1;
+            $$->child[1] = $3;
+          }
           | simp_exp
           {
             $$ = $1;
@@ -274,7 +287,6 @@ var : ident
       $$ = $1;
       $$->child[0] = $3;
       $$->kind.exp = ArrK;
-      $$->type = IntegerK;
     }
     ;
 simp_exp : soma_exp relacional soma_exp 
