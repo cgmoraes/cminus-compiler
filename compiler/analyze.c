@@ -27,16 +27,16 @@ static void traverse(TreeNode *t,
                      void (*preProc)(TreeNode *),
                      void (*postProc)(TreeNode *))
 {
-    if (t != NULL)
-    {
-        preProc(t);
-        {
-            int i;
-            for (i = 0; i < MAXCHILDREN; i++)
-                traverse(t->child[i], preProc, postProc);
-        }
-        postProc(t);
-        traverse(t->sibling, preProc, postProc);
+  if (t != NULL)
+  {
+      preProc(t);
+      {
+        int i;
+        for (i = 0; i < MAXCHILDREN; i++)
+          traverse(t->child[i], preProc, postProc);
+      }
+      postProc(t);
+      traverse(t->sibling, preProc, postProc);
     }
 }
 
@@ -81,10 +81,8 @@ static void insertNode( TreeNode * t)
       case CallK:
         {
           BucketList l = st_lookup(t->attr.scope, t->attr.name);
-          if (l == NULL){
-            if (strcmp(t->attr.name, "input") != 0 & strcmp(t->attr.name, "output") != 0)
-              typeError(t, "Error 5: Invalid call. Not declared.");
-          } else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
+          if (l == NULL) typeError(t, "Error 5: Invalid call. Not declared.");
+          else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
         }
         break;
       case ReturnK:
@@ -132,13 +130,15 @@ static void checkNode(TreeNode * t)
           if (t->type == VoidK) typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
           break;
         case IfK:
-          if (t->child[0]->kind.stmt == AssignK) typeError(t->child[0],"if test is not Boolean");
+          if (t->child[0]->kind.stmt == AssignK) typeError(t->child[0], "Error ?: Invalid condition. If condition is not Boolean.");
           break;
         case AssignK:
           {
-            BucketList l = st_lookup(t->child[1]->attr.scope, t->child[1]->attr.name);
-            if (t->child[1]->kind.stmt == CallK && 
-            !strcmp(l->type, "void")) typeError(t->child[1], "Error 2: Invalid assignment. Assignment of void return.");
+            if (t->child[1]->attr.name != NULL){
+              BucketList l = st_lookup(t->attr.scope, t->child[1]->attr.name);
+              if (l != NULL && t->child[1]->kind.stmt == CallK && 
+              !strcmp(l->type, "void")) typeError(t->child[1], "Error 2: Invalid assignment. Assignment of void return.");
+            }
           }
           break;
         default:
@@ -146,10 +146,14 @@ static void checkNode(TreeNode * t)
         case ReturnK:
         {
           BucketList l = st_lookup(t->attr.scope, t->attr.scope);
-          if (!strcmp(l->type,"inteiro") && 
-          t->child[0] == NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
-          else if (!strcmp(l->type,"void") && 
-          t->child[0] != NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+          if (l != NULL){
+          
+            if (!strcmp(l->type,"inteiro") && 
+            t->child[0] == NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+            else if (!strcmp(l->type,"void") && 
+            t->child[0] != NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+          
+          }
         }
       }
       break;

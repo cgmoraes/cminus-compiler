@@ -20,6 +20,8 @@ void printToken( TokenType token, const char* tokenString )
     case RETURN: fprintf(listing,"%s\n",tokenString); break;
     case VOID: fprintf(listing,"%s\n",tokenString); break;
     case WHILE: fprintf(listing,"%s\n",tokenString); break;
+    case IN: fprintf(listing,"%s\n",tokenString); break;
+    case OUT: fprintf(listing,"%s\n",tokenString); break;
     case MAIS: fprintf(listing,"+\n"); break;
     case MENOS: fprintf(listing,"-\n"); break;
     case VEZES: fprintf(listing,"x\n"); break;
@@ -148,6 +150,12 @@ void printTree( TreeNode * tree )
           break;
         case ReturnK:
           fprintf(listing,"Return\n");
+          break;
+        case InK:
+          fprintf(listing,"Input\n");
+          break;
+        case OutK:
+          fprintf(listing,"Output\n");
           break;
         default:
           fprintf(listing,"Unknown ExpNode kind\n");

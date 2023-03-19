@@ -28,6 +28,8 @@ espacobranco   [ \t\r]+
 "return" {return RETURN;}
 "void" {return VOID;}
 "while" {return WHILE;}
+"input" {return IN;}
+"output" {return OUT;}
 "+" {return MAIS;}
 "-" {return MENOS;}
 "*" {return VEZES;}

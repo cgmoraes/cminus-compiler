@@ -15,7 +15,7 @@ int yyerror(char *msg);
 
 %}
 
-%token ELSE IF INT RETURN VOID WHILE 
+%token ELSE IF INT RETURN VOID WHILE IN OUT
 %token MAIS MENOS VEZES SOBRE
 %token MENORQ MENORI MAIORQ MAIORI IGUAL DIF
 %token PONVIR VIRG EPAREN DPAREN ECOLCH DCOLCH ECHAVE DCHAVE RECEBE
@@ -221,6 +221,14 @@ stmt : exp_decl
           {
             $$ = $1;
           }
+          | input_decl
+          {
+            $$ = $1;
+          }
+          | output_decl
+          {
+            $$ = $1;
+          }
           ;
 exp_decl : exp PONVIR 
                 {
@@ -259,6 +267,22 @@ retorno_decl : RETURN PONVIR
                 $$->child[0] = $2;
               }
              ;
+input_decl   : IN EPAREN DPAREN
+                 { $$ = newStmtNode(InK);
+                   $$->attr.name =
+                     copyString(tokenString);
+                 }
+            ;
+output_decl  : OUT EPAREN var DPAREN
+                 { $$ = newStmtNode(OutK);
+                   $$->attr.name = copyString(tokenString);
+                   $$->child[0] = $3;
+                 }
+            | OUT EPAREN DPAREN
+                 { $$ = newStmtNode(OutK);
+                   $$->attr.name = copyString(tokenString);
+                 }
+            ;
 exp : var RECEBE exp 
           {
             $$ = newStmtNode(AssignK);
@@ -267,6 +291,13 @@ exp : var RECEBE exp
             $$->child[1] = $3;
           }
           | var RECEBE ativ
+          {
+            $$ = newStmtNode(AssignK);
+            $$->attr.name = $1->attr.name;
+            $$->child[0] = $1;
+            $$->child[1] = $3;
+          }
+          | var RECEBE input_decl
           {
             $$ = newStmtNode(AssignK);
             $$->attr.name = $1->attr.name;
@@ -400,6 +431,7 @@ fator : EPAREN exp DPAREN
       ;
 ativ : ident EPAREN arg_lista DPAREN
           {
+            $$->attr.name = $1->attr.name;
             $$ = $1;
             $$->child[0] = $3;
             $$->nodekind = StmtK;
@@ -407,6 +439,7 @@ ativ : ident EPAREN arg_lista DPAREN
           }
           | ident EPAREN DPAREN
           {
+            $$->attr.name = $1->attr.name;
             $$ = $1;
             $$->nodekind = StmtK;
             $$->kind.stmt = CallK;
