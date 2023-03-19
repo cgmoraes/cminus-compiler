@@ -29,40 +29,28 @@ static void insertNode( TreeNode * t)
       { case VarK:
         {
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
-          if (l == NULL)
-          { 
-            if (t->type == VoidK) typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
-            else {
-              if (t->attr.len > 0) st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
-              else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
-            }
-          }
-          else
-          {
-            typeError(t, "Error 4: Invalid declaration. Already declared.");
-          }
+          if (l == NULL) {
+            if (t->type == VoidK)typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
+            else if (!strcmp(t->attr.scope, t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
+            else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
+          
+          } else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
         break;
       case FunK:
         {
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
-          if (l == NULL)
-          {
-              if (t->type == IntegerK) st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
-              else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
-          }
+          if (l == NULL) st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
           else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
         break;
       case CallK:
         {
           BucketList l = st_lookup(t->attr.scope, t->attr.name);
-          if (l == NULL)
-          {
-              if (strcmp(t->attr.name, "input") != 0 & strcmp(t->attr.name, "output") != 0)
-                  typeError(t, "Error 5: Invalid call. Not declared.");
-          }
-          else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
+          if (l == NULL){
+            if (strcmp(t->attr.name, "input") != 0 & strcmp(t->attr.name, "output") != 0)
+              typeError(t, "Error 5: Invalid call. Not declared.");
+          } else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
         }
         break;
       case ReturnK:
@@ -76,29 +64,28 @@ static void insertNode( TreeNode * t)
       {case IdK:
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
-            if (l == NULL)
-            {
-              typeError(t, "Error 1: Not declared");
-            }
-            else
-            {
-              st_insert(l, t->attr.scope, t->attr.name, t->lineno, 0);
-            }
+            if (l == NULL) typeError(t, "Error 1: Not declared");
+            else st_insert(l, t->attr.scope, t->attr.name, t->lineno, 0);
           } 
           break;
-        case VetK:
+        case ArrK:
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
-            if (l == NULL)
-            {
-                typeError(t, "Error 1: Not declared");
-            }
-            else
-            {
-                st_insert(l, t->attr.scope, t->attr.name, t->lineno, 0);
-            }
+            if (l == NULL) typeError(t, "Error 1: Not declared");
+            else st_insert(l, t->attr.scope, t->attr.name, t->lineno, 0);
           }
           break;
+        // case ParK:
+        //   {
+        //     BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
+        //     if (l == NULL) {
+        //       if (t->type == VoidK)typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
+        //       else if (!strcmp(t->attr.scope, t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
+        //       else st_insert(l, t->attr.scope, t->attr.name, t->lineno, location++);
+            
+        //     } else typeError(t, "Error 4: Invalid declaration. Already declared.");
+        //   }
+        //   break;
         case TypeK:
           break;
         default:
@@ -160,9 +147,9 @@ static void traverseInsertNode(TreeNode *t)
   {
     insertNode(t);
     {
-        int i;
-        for (i = 0; i < MAXCHILDREN; i++)
-          traverseInsertNode(t->child[i]);
+      int i;
+      for (i = 0; i < MAXCHILDREN; i++)
+        traverseInsertNode(t->child[i]);
     }
     traverseInsertNode(t->sibling);
   }
@@ -174,9 +161,9 @@ static void traverseCheckNode(TreeNode *t)
   if (t != NULL)
   {
     {
-        int i;
-        for (i = 0; i < MAXCHILDREN; i++)
-          traverseCheckNode(t->child[i]);
+      int i;
+      for (i = 0; i < MAXCHILDREN; i++)
+        traverseCheckNode(t->child[i]);
     }
     checkNode(t);
     traverseCheckNode(t->sibling);
@@ -188,7 +175,6 @@ static void traverseCheckNode(TreeNode *t)
  */
 void buildSymtab(TreeNode * syntaxTree)
 {
-  createScopeList();
   traverseInsertNode(syntaxTree);
   if (TraceAnalyze)
   { fprintf(listing,"\nSymbol table:\n\n");

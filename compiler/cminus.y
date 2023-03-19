@@ -42,53 +42,39 @@ decl : var_decl {$$ = $1;}
            | fun_decl {$$ = $1;}
 
            ;
-var_decl : INT ident PONVIR 
+var_decl : tipo_espec ident PONVIR 
               {
                 $$ = newExpNode(TypeK);
-                $$->type = IntegerK;
-                $$->attr.name = "inteiro";
+                $$->type = $1->type;
+                $$->attr.name = $1->attr.name;
                 $$->child[0] = $2;
                 $2->nodekind = StmtK;
                 $2->kind.stmt = VarK;
-                $2->type = IntegerK;
+                $2->type = $1->type;
 						  }
-               | INT ident ECOLCH num DCOLCH PONVIR
+               | tipo_espec ident ECOLCH num DCOLCH PONVIR
                 {
                   $$ = newExpNode(TypeK);
-                  $$->type = IntegerK;
-                  $$->attr.name = "inteiro";
+                  $$->type = $1->type;
+                  $$->attr.name = $1->attr.name;
                   $$->child[0] = $2;
                   $2->nodekind = StmtK;
                   $2->kind.stmt = VarK;
-                  $2->type = IntegerK; 
+                  $2->type = $1->type;
                   $2->attr.len = $4->attr.val;
                 }
                 ;
-fun_decl : INT ident EPAREN params DPAREN comp_decl
+fun_decl : tipo_espec ident EPAREN params DPAREN comp_decl
                 {
                   $$ = newExpNode(TypeK);
-                  $$->type = IntegerK;
-                  $$->attr.name = "inteiro";
+                  $$->type = $1->type;
+                  $$->attr.name = $1->attr.name;
                   $$->child[0] = $2;
                   $2->child[0] = $4;
                   $2->child[1] = $6;
                   $2->nodekind = StmtK;
                   $2->kind.stmt = FunK;
-                  $2->type = IntegerK;
-                  $4->type = IntegerK;
-                  addScope($2->child[0], $2->attr.name);
-                  addScope($2->child[1], $2->attr.name);
-                }
-                | VOID ident EPAREN params DPAREN comp_decl
-                {
-                  $$ = newExpNode(TypeK);
-                  $$->type = VoidK;
-                  $$->attr.name = "void";
-                  $$->child[0] = $2;
-                  $2->child[0] = $4;
-                  $2->child[1] = $6;
-                  $2->nodekind = StmtK;
-                  $2->kind.stmt = FunK;
+                  $2->type = $1->type;
                   addScope($2->child[0], $2->attr.name);
                   addScope($2->child[1], $2->attr.name);
                 }
@@ -114,27 +100,49 @@ param_lista : param_lista VIRG param
             | param {$$ = $1;}
             ;
 tipo_espec : INT
-                  {
-                    $$ = newExpNode(TypeK);
-                    $$->attr.name = "inteiro";
-                    $$->type = IntegerK;
-                  }
-                  | VOID
-                  {
-                    $$ = newExpNode(TypeK);
-                    $$->attr.name = "void";
-                    $$->type = VoidK;
-                  }
-                  ;
+            {
+              $$ = newExpNode(TypeK);
+              $$->attr.name = "inteiro";
+              $$->type = IntegerK;
+            }
+            | VOID
+            {
+              $$ = newExpNode(TypeK);
+              $$->attr.name = "void";
+              $$->type = VoidK;
+            }
+            ;
 param : tipo_espec ident
       {
-        $$ = $1;
-        $$->child[0]= $2;
+        $$ = newExpNode(TypeK);
+        $$->type = $1->type;
+        $$->attr.name = $1->attr.name;
+        $$->child[0] = $2;
+        $2->nodekind = StmtK;
+        $2->kind.stmt = VarK;
+        $2->type = $1->type;
       }
       | tipo_espec ident ECOLCH DCOLCH
       {
-        $$= $1;
-        $$->child[0]= $2;
+        $$ = newExpNode(TypeK);
+        $$->type = $1->type;
+        $$->attr.name = $1->attr.name;
+        $$->child[0] = $2;
+        $2->nodekind = StmtK;
+        $2->kind.stmt = VarK;
+        $2->type = $1->type;
+        $2->attr.len = -1;
+      }
+      | tipo_espec ident ECOLCH num DCOLCH
+      {
+      $$ = newExpNode(TypeK);
+      $$->type = $1->type;
+      $$->attr.name = $1->attr.name;
+      $$->child[0] = $2;
+      $2->nodekind = StmtK;
+      $2->kind.stmt = VarK;
+      $2->type = $1->type;
+      $2->attr.len = $4->attr.val;
       }
       ;
 comp_decl : ECHAVE local_decl stmt_lista DCHAVE
@@ -265,7 +273,7 @@ var : ident
     {
       $$ = $1;
       $$->child[0] = $3;
-      $$->kind.exp = VetK;
+      $$->kind.exp = ArrK;
       $$->type = IntegerK;
     }
     ;
