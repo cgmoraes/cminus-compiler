@@ -65,7 +65,7 @@ static void insertNode( TreeNode * t)
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
           if (l == NULL) {
             
-            if (!strcmp(t->attr.scope, t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
+            if (st_lookup_fun(t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
             else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
           
           } else typeError(t, "Error 4: Invalid declaration. Already declared.");
@@ -130,7 +130,7 @@ static void checkNode(TreeNode * t)
           if (t->type == VoidK) typeError(t, "Error 3: Invalid declaration. Variable can't be void.");
           break;
         case IfK:
-          if (t->child[0]->kind.stmt == AssignK) typeError(t->child[0], "Error ?: Invalid condition. If condition is not Boolean.");
+          if (t->child[0]->kind.stmt == AssignK) typeError(t->child[0], "Error 8: Invalid condition. If condition is not Boolean.");
           break;
         case AssignK:
           {
@@ -149,9 +149,9 @@ static void checkNode(TreeNode * t)
           if (l != NULL){
           
             if (!strcmp(l->type,"inteiro") && 
-            t->child[0] == NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+            t->child[0] == NULL) typeError(t, "Error 2: Invalid return. Wrong type return.");
             else if (!strcmp(l->type,"void") && 
-            t->child[0] != NULL) typeError(t, "Error ?: Invalid return. Wrong type return.");
+            t->child[0] != NULL) typeError(t, "Error 2: Invalid return. Wrong type return.");
           
           }
         }
@@ -163,16 +163,15 @@ static void checkNode(TreeNode * t)
   }
 }
 
+void checkMain(TreeNode * t){
+  if(!st_lookup_fun("main")) typeError(t, "Error 6: Main function not declared.");
+}
+
 /* Function buildSymtab constructs the symbol 
  * table by preorder traversal of the syntax tree
  */
 void buildSymtab(TreeNode * syntaxTree)
-{
-  traverse(syntaxTree, insertNode, nullProc);
-  if (TraceAnalyze)
-  { fprintf(listing,"\nSymbol table:\n\n");
-    printSymTab(listing);
-  }
+{ traverse(syntaxTree, insertNode, nullProc);
 }
 
 /* Procedure typeCheck performs type checking 
@@ -180,4 +179,5 @@ void buildSymtab(TreeNode * syntaxTree)
  */
 void typeCheck(TreeNode * syntaxTree)
 { traverse(syntaxTree, nullProc, checkNode);
+  checkMain(syntaxTree);  
 }

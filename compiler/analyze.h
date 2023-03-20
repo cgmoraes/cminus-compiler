@@ -18,4 +18,6 @@ void buildSymtab(TreeNode *);
  */
 void typeCheck(TreeNode *);
 
+void printSymTab(FILE * listing);
+
 #endif
