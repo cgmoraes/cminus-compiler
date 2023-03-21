@@ -65,7 +65,7 @@ static void insertNode( TreeNode * t)
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
           if (l == NULL) {
             
-            if (st_lookup_fun(t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
+            if (st_lookup_scope(t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
             else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
           
           } else typeError(t, "Error 4: Invalid declaration. Already declared.");
@@ -74,8 +74,10 @@ static void insertNode( TreeNode * t)
       case FunK:
         {
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
-          if (l == NULL) st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
-          else typeError(t, "Error 4: Invalid declaration. Already declared.");
+          if (l == NULL){
+            st_insert_scope(t->attr.name);
+            st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
+          } else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
         break;
       case CallK:
@@ -164,7 +166,7 @@ static void checkNode(TreeNode * t)
 }
 
 void checkMain(TreeNode * t){
-  if(!st_lookup_fun("main")) typeError(t, "Error 6: Main function not declared.");
+  if(!st_lookup_scope("main")) typeError(t, "Error 6: Main function not declared.");
 }
 
 /* Function buildSymtab constructs the symbol 

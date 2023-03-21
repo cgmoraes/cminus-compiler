@@ -133,7 +133,7 @@ param : tipo_espec ident
         $$->attr.name = $1->attr.name;
         $$->child[0] = $2;
         $2->nodekind = StmtK;
-        $2->kind.stmt = VarK;
+        $2->kind.stmt = ArrK;
         $2->type = $1->type;
         $2->attr.len = -1;
         $2->attr.type = $1->attr.name;
@@ -145,7 +145,7 @@ param : tipo_espec ident
       $$->attr.name = $1->attr.name;
       $$->child[0] = $2;
       $2->nodekind = StmtK;
-      $2->kind.stmt = VarK;
+      $2->kind.stmt = ArrK;
       $2->type = $1->type;
       $2->attr.len = $4->attr.val;
       $2->attr.type = $1->attr.name;
@@ -284,13 +284,6 @@ output_decl  : OUT EPAREN var DPAREN
                  }
             ;
 exp : var RECEBE exp 
-          {
-            $$ = newStmtNode(AssignK);
-            $$->attr.name = $1->attr.name;
-            $$->child[0] = $1;
-            $$->child[1] = $3;
-          }
-          | var RECEBE ativ
           {
             $$ = newStmtNode(AssignK);
             $$->attr.name = $1->attr.name;

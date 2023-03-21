@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtab.h"
+#include "globals.h"
 
 /* SIZE is the size of the hash table */
 #define SIZE 211
@@ -47,13 +48,13 @@ static char * scopes[SIZE];
 /* the hash table */
 static BucketList hashTable[SIZE][SIZE];
 
-static void checkScopes(char* scope) 
+void st_insert_scope(char* scope) 
 {
   int i;
-  for (i = 0; i < SIZE; i++) {
+  for (i = 0; i < SIZE; ++i) {
     if (scopes[i] == NULL) {
-      scopes[i] = malloc(strlen(scope) + 1);
-      strcpy(scopes[i], scope);
+      scopes[i] = malloc(strlen(scope));
+      strcpy(scopes[i],scope);
       return;
     } else if (!strcmp(scopes[i], scope))
       return;
@@ -66,8 +67,7 @@ static void checkScopes(char* scope)
  * first time, otherwise ignored
  */
 void st_insert( BucketList l, char * scope, char * name, char * type, int lineno, int loc )
-{ 
-  checkScopes(scope);
+{
   int row = (!strcmp(scope, "global")) ? 0: scopeHash(scope);
   int col = hash(name);
   if (l == NULL) /* variable not yet in table */
@@ -117,11 +117,12 @@ BucketList st_lookup ( char * scope, char * name )
   return NULL;
 }
 
-int st_lookup_fun(char * name)
+int st_lookup_scope(char * name)
 {
   int i;
-  for (i = 1; scopes[i] != NULL; ++i)
+  for (i = 0; scopes[i] != NULL; ++i){
     if (!strcmp(scopes[i], name)) return 1;
+  }
   return 0;
 }
 
@@ -134,7 +135,7 @@ void printSymTab(FILE * listing)
   fprintf(listing,"Type     Variable Name  Scope       Location   Line Numbers\n");
   fprintf(listing,"-------  -------------  ----------  --------   ------------\n");
   for (i=0;scopes[i] != NULL;++i){
-    int row = (!strcmp(scopes[i], "global")) ? 0: scopeHash(scopes[i]);
+    int row = (i == 0) ? i: scopeHash(scopes[i]);
     for (j=0;j<SIZE;++j)
     { if (hashTable[row][j] != NULL)
       { BucketList l = hashTable[row][j];
