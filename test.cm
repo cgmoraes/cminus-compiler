@@ -1,3 +1,10 @@
 int main(void){
-    return 1;
+    int vetor[5]; 
+    int b; 
+    b = input();
+    output();
+}
+
+int sort(void){
+    main(int i);
 }

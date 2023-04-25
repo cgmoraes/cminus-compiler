@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "symtab.h"
-#include "globals.h"
 
 /* SIZE is the size of the hash table */
 #define SIZE 211
@@ -132,10 +131,13 @@ int st_lookup_scope(char * name)
  */
 void printSymTab(FILE * listing)
 { int i, j;
-  fprintf(listing,"Type     Variable Name  Scope       Location   Line Numbers\n");
-  fprintf(listing,"-------  -------------  ----------  --------   ------------\n");
   for (i=0;scopes[i] != NULL;++i){
-    int row = (i == 0) ? i: scopeHash(scopes[i]);
+    fprintf(listing,"Scope: ");
+    fprintf(listing,"%s\n",scopes[i]);
+    fprintf(listing,"-----------------------------------------------------------\n");
+    fprintf(listing,"Type     Variable Name  Line Numbers\n");
+    fprintf(listing,"-------  -------------  ------------\n");
+    int row = (i == 0) ? 0: scopeHash(scopes[i]);
     for (j=0;j<SIZE;++j)
     { if (hashTable[row][j] != NULL)
       { BucketList l = hashTable[row][j];
@@ -143,10 +145,8 @@ void printSymTab(FILE * listing)
         { LineList t = l->lines;
           fprintf(listing,"%-7s  ",l->type);
           fprintf(listing,"%-14s ",l->name);
-          fprintf(listing,"%-10s  ",l->scope);
-          fprintf(listing,"%-8d  ",l->memloc);
           while (t != NULL)
-          { fprintf(listing,"%4d ",t->lineno);
+          { fprintf(listing,"%2d ",t->lineno);
             t = t->next;
           }
           fprintf(listing,"\n");
@@ -154,5 +154,6 @@ void printSymTab(FILE * listing)
         }
       }
     }
+    fprintf(listing,"\n");
   }
 } /* printSymTab */

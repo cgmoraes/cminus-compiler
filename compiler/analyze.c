@@ -173,7 +173,8 @@ void checkMain(TreeNode * t){
  * table by preorder traversal of the syntax tree
  */
 void buildSymtab(TreeNode * syntaxTree)
-{ traverse(syntaxTree, insertNode, nullProc);
+{ st_insert_scope("global");
+  traverse(syntaxTree, insertNode, nullProc);
 }
 
 /* Procedure typeCheck performs type checking 
