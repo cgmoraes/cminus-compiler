@@ -132,11 +132,12 @@ int st_lookup_scope(char * name)
 void printSymTab(FILE * listing)
 { int i, j;
   for (i=0;scopes[i] != NULL;++i){
-    fprintf(listing,"Scope: ");
+    fprintf(listing,"-----------------------------------------------------------\n");
+    fprintf(listing,"Scope    ");
     fprintf(listing,"%s\n",scopes[i]);
     fprintf(listing,"-----------------------------------------------------------\n");
     fprintf(listing,"Type     Variable Name  Line Numbers\n");
-    fprintf(listing,"-------  -------------  ------------\n");
+    fprintf(listing,"-----------------------------------------------------------\n");
     int row = (i == 0) ? 0: scopeHash(scopes[i]);
     for (j=0;j<SIZE;++j)
     { if (hashTable[row][j] != NULL)
@@ -154,6 +155,5 @@ void printSymTab(FILE * listing)
         }
       }
     }
-    fprintf(listing,"\n");
   }
 } /* printSymTab */

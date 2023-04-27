@@ -110,6 +110,15 @@ static void insertNode( TreeNode * t)
             else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
           }
           break;
+        case OpK:
+          {
+            if(t->child[0]->kind.stmt == CallK && t->child[0]->type == VoidK){
+              typeError(t->child[0], "Error 2: Operation with void function.");
+            } else if(t->child[1]->kind.stmt == CallK && t->child[1]->type == VoidK){
+              typeError(t->child[1], "Error 2: Operation with void function.");
+            }
+          }
+          break;
         case TypeK:
           break;
         default:
