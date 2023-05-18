@@ -1,11 +1,4 @@
-void main(void){
-    int vetor[5]; 
-    int b; 
-    b = input();
-    output();
-}
-
-int sort(void){
-   int c;
-   c = 2 + 2 + main();
+int main(int a, int b){
+    int x; int c;
+    x = 2;
 }

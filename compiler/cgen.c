@@ -12,153 +12,283 @@
 #include "code.h"
 #include "cgen.h"
 
-/* tmpOffset is the memory offset for temps
-   It is decremented each time a temp is
-   stored, and incremeted when loaded again
-*/
-static int tmpOffset = 0;
+static int indexR = -1;
+static int indexL = -1;
+static TreeNode * root;
+static void cGen( TreeNode * tree);
 
-/* prototype for internal recursive code generator */
-static void cGen (TreeNode * tree);
+static int getTempReg()
+{
+  indexR = (indexR+1)%32;
+  return indexR;
+}
+
+static int loadVar(TreeNode * tree)
+{
+  int r1 = -1;
+  if(tree->kind.exp == IdK || tree->kind.exp == ArrK){
+    r1 = getTempReg();
+    fprintf(code, "LOAD $t%d %s\n", r1, tree->attr.name);
+  }
+  return r1;
+}
+
+static void printOp(TreeNode * tree)
+{ switch (tree->attr.op) {
+    case MAIS :
+        fprintf(code, "MAIS");
+        break;
+    case MENOS :
+        fprintf(code, "MENOS");
+        break;
+    case VEZES :
+        fprintf(code, "VEZES");
+        break;
+    case SOBRE :
+        fprintf(code, "SOBRE");
+        break;
+    case MENORQ :
+        fprintf(code, "MENORQ");
+        break;
+    case MENORI :
+        fprintf(code, "MENORI");
+        break;
+    case MAIORQ :
+        fprintf(code, "MAIORQ");
+        break;
+    case MAIORI :
+        fprintf(code, "MAIORI");
+        break;
+    case IGUAL :
+        fprintf(code, "IGUAL");
+        break;
+    case DIF :
+        fprintf(code, "DIF");
+        break;
+    default:
+        break;
+  }
+
+}
 
 /* Procedure genStmt generates code at a statement node */
 static void genStmt( TreeNode * tree)
 { TreeNode * p1, * p2, * p3;
   int savedLoc1,savedLoc2,currentLoc;
-  int loc;
+  int loc, r1, r2, l1, l2;
   switch (tree->kind.stmt) {
 
       case IfK :
-         if (TraceCode) emitComment("-> if") ;
-         p1 = tree->child[0] ;
-         p2 = tree->child[1] ;
-         p3 = tree->child[2] ;
-         /* generate code for test expression */
-         cGen(p1);
-         savedLoc1 = emitSkip(1) ;
-         emitComment("if: jump to else belongs here");
-         /* recurse on then part */
-         cGen(p2);
-         savedLoc2 = emitSkip(1) ;
-         emitComment("if: jump to end belongs here");
-         currentLoc = emitSkip(0) ;
-         emitBackup(savedLoc1) ;
-         emitRM_Abs("JEQ",ac,currentLoc,"if: jmp to else");
-         emitRestore() ;
-         /* recurse on else part */
-         cGen(p3);
-         currentLoc = emitSkip(0) ;
-         emitBackup(savedLoc2) ;
-         emitRM_Abs("LDA",pc,currentLoc,"jmp to end") ;
-         emitRestore() ;
-         if (TraceCode)  emitComment("<- if") ;
-         break; /* if_k */
+        {
+          p1 = tree->child[0] ;
+          p2 = tree->child[1] ;
+          p3 = tree->child[2] ;
+          
+          indexL++;
+          l1 = indexL;
+          cGen(p1);
+          r1 = indexR;
+          fprintf(code, "IFF $t%d L%d\n", r1, l1);
+          indexL++;
+          l2 = indexL;
+          cGen(p2);
+          fprintf(code, "GOTO L%d\n", l2);
+          fprintf(code, "LAB L%d\n", l1);
+          cGen(p3);
+          fprintf(code, "LAB L%d\n", l2);
+          break; /* if_k */
+        }
 
-      case RepeatK:
-         if (TraceCode) emitComment("-> repeat") ;
-         p1 = tree->child[0] ;
-         p2 = tree->child[1] ;
-         savedLoc1 = emitSkip(0);
-         emitComment("repeat: jump after body comes back here");
-         /* generate code for body */
-         cGen(p1);
-         /* generate code for test */
-         cGen(p2);
-         emitRM_Abs("JEQ",ac,savedLoc1,"repeat: jmp back to body");
-         if (TraceCode)  emitComment("<- repeat") ;
-         break; /* repeat */
+      case WhileK:
+        {
+          p1 = tree->child[0] ;
+          p2 = tree->child[1] ;
+
+          indexL++;
+          l1 = indexL;
+          fprintf(code, "LAB L%d\n", l1);
+          indexL++;
+          l2 = indexL;
+          cGen(p1);
+          r1 = indexR;
+          fprintf(code, "WHILE $t%d L%d\n", r1, l2);
+          cGen(p2);
+          fprintf(code, "GOTO L%d\n", l1);
+          fprintf(code, "LAB L%d\n", l2);
+          break;
+        }
 
       case AssignK:
-         if (TraceCode) emitComment("-> assign") ;
-         /* generate code for rhs */
-         cGen(tree->child[0]);
-         /* now store value */
-         loc = st_lookup(tree->attr.name);
-         emitRM("ST",ac,loc,gp,"assign: store value");
-         if (TraceCode)  emitComment("<- assign") ;
-         break; /* assign_k */
+        {
+          if (tree->child[1]->kind.exp == ConstK){
+            fprintf(code, "ASSIGN A $t%d", getTempReg());
+            r2 = indexR;
+            cGen(tree->child[1]);
+            fprintf(code, "\n");
+          } else {
+            cGen(tree->child[1]);
+            r1 = indexR;
+            fprintf(code, "ASSIGN $t%d", getTempReg());
+            r2 = indexR;
+            fprintf(code, " $t%d\n", r1);
+          }
+          fprintf(code, "STORE %s $t%d\n", tree->attr.name, r2);
+        }
+        break; /* assign_k */
 
-      case ReadK:
-         emitRO("IN",ac,0,0,"read integer value");
-         loc = st_lookup(tree->attr.name);
-         emitRM("ST",ac,loc,gp,"read: store value");
-         break;
-      case WriteK:
-         /* generate code for expression to write */
-         cGen(tree->child[0]);
-         /* now output it */
-         emitRO("OUT",ac,0,0,"write ac");
-         break;
+      case VarK:
+        if (tree->attr.len > 0) fprintf(code, "ARR %s(%d) %s", tree->attr.name, tree->attr.len, tree->attr.scope);
+        else fprintf(code, " %s %s", tree->attr.name, tree->attr.scope);
+        break;
+
+      case FunK :
+        p1 = tree->child[0];
+        if (p1->child[0] != NULL){
+          while(p1 != NULL){
+            fprintf(code, "ARG %s %s\n", p1->attr.name, p1->child[0]->attr.name);
+            p1 = p1->sibling;
+          } 
+        }
+        cGen(tree->child[1]);
+        fprintf(code, "END %s", tree->attr.name);
+        break;
+      
+      case CallK:
+        {
+          int i = 0;
+          p1 = tree->child[0];
+          if (p1 != NULL){
+            for(i=0;p1 != NULL;i++){
+              if (p1->kind.exp == ConstK) fprintf(code, "PARAM %d\n", p1->attr.val);
+              else {
+                fprintf(code, "LOAD $t%d %s\n", getTempReg(), p1->attr.name);
+                r1 = indexR;
+                fprintf(code, "PARAM $t%d\n", r1);
+              }
+              p1 = p1->sibling;
+            } 
+          }
+          fprintf(code, "CALL $t%d %s %d\n", getTempReg(), tree->attr.name, i);
+          break;
+        }
+
+      case ReturnK:
+        if (tree->child[0] == NULL) fprintf(code, "RET");
+        else if(tree->child[0]->kind.exp == ConstK) {
+          fprintf(code, "RET");
+          cGen(tree->child[0]);
+        }
+        else {
+          cGen(tree->child[0]);
+          r1 = indexR;
+          fprintf(code, "RET $t%d", r1);
+        }
+        fprintf(code, "\n");
+        break;
+
+      case InK:
+        fprintf(code, "INPUT $t%d\n", getTempReg());
+        break;
+
+      case OutK:
+        {
+          if ((tree->child[0]->kind.exp == ConstK)){
+            fprintf(code, "OUTPUT");
+            cGen(tree->child[0]);
+            fprintf(code, "\n");
+          } else {
+            cGen(tree->child[0]);
+            r1 = indexR;
+            fprintf(code, "OUTPUT $t%d\n", r1);
+          }
+          break;
+        }
+
       default:
-         break;
+        break;
     }
 } /* genStmt */
 
 /* Procedure genExp generates code at an expression node */
 static void genExp( TreeNode * tree)
-{ int loc;
+{ int loc, r1, r2;
   TreeNode * p1, * p2;
   switch (tree->kind.exp) {
 
+    case TypeK:
+      if (tree->child[0]->kind.stmt == FunK){
+        fprintf(code, "\nFUN %s %s\n", tree->child[0]->attr.type, tree->child[0]->attr.name);
+        cGen(tree->child[0]);
+      }
+      else{
+        fprintf(code, "ALLOC");
+        cGen(tree->child[0]);
+      }
+      fprintf(code, "\n");
+      break;
+
     case ConstK :
-      if (TraceCode) emitComment("-> Const") ;
-      /* gen code to load integer constant using LDC */
-      emitRM("LDC",ac,tree->attr.val,0,"load const");
-      if (TraceCode)  emitComment("<- Const") ;
+      fprintf(code, " %d", tree->attr.val);
       break; /* ConstK */
     
     case IdK :
-      if (TraceCode) emitComment("-> Id") ;
-      loc = st_lookup(tree->attr.name);
-      emitRM("LD",ac,loc,gp,"load id value");
-      if (TraceCode)  emitComment("<- Id") ;
+      fprintf(code, "LOAD $t%d %s\n", getTempReg(), tree->attr.name);
       break; /* IdK */
 
+    case ArrK :
+      !(tree->child[0]->kind.exp == ConstK) ? cGen(tree->child[0]):NULL;
+      r1 = indexR;
+      if (tree->child[0]->kind.exp == ConstK) fprintf(code, "VEZES $t%d %d 4\n", getTempReg(), tree->child[0]->attr.val);
+      else fprintf(code, "VEZES $t%d $t%d 4\n", getTempReg(), r1);
+      r2 = indexR;
+      fprintf(code, "LOAD $t%d %s($t%d)\n", getTempReg(), tree->attr.name, r2);
+      break;
+
     case OpK :
-         if (TraceCode) emitComment("-> Op") ;
-         p1 = tree->child[0];
-         p2 = tree->child[1];
-         /* gen code for ac = left arg */
-         cGen(p1);
-         /* gen code to push left operand */
-         emitRM("ST",ac,tmpOffset--,mp,"op: push left");
-         /* gen code for ac = right operand */
-         cGen(p2);
-         /* now load left operand */
-         emitRM("LD",ac1,++tmpOffset,mp,"op: load left");
-         switch (tree->attr.op) {
-            case PLUS :
-               emitRO("ADD",ac,ac1,ac,"op +");
-               break;
-            case MINUS :
-               emitRO("SUB",ac,ac1,ac,"op -");
-               break;
-            case TIMES :
-               emitRO("MUL",ac,ac1,ac,"op *");
-               break;
-            case OVER :
-               emitRO("DIV",ac,ac1,ac,"op /");
-               break;
-            case LT :
-               emitRO("SUB",ac,ac1,ac,"op <") ;
-               emitRM("JLT",ac,2,pc,"br if true") ;
-               emitRM("LDC",ac,0,ac,"false case") ;
-               emitRM("LDA",pc,1,pc,"unconditional jmp") ;
-               emitRM("LDC",ac,1,ac,"true case") ;
-               break;
-            case EQ :
-               emitRO("SUB",ac,ac1,ac,"op ==") ;
-               emitRM("JEQ",ac,2,pc,"br if true");
-               emitRM("LDC",ac,0,ac,"false case") ;
-               emitRM("LDA",pc,1,pc,"unconditional jmp") ;
-               emitRM("LDC",ac,1,ac,"true case") ;
-               break;
-            default:
-               emitComment("BUG: Unknown operator");
-               break;
-         } /* case op */
-         if (TraceCode)  emitComment("<- Op") ;
-         break; /* OpK */
+      p1 = tree->child[0];
+      p2 = tree->child[1];
+      if(p1->kind.exp == OpK && p2->kind.exp == OpK){
+        cGen(p1);
+        r1 = indexR;
+        cGen(p2);
+        r2 = indexR;
+        printOp(tree);
+        fprintf(code, "A $t%d", getTempReg());
+        fprintf(code, " $t%d", r1);
+        fprintf(code, " $t%d", r2);
+
+      } else if(p1->kind.exp != OpK && p2->kind.exp == OpK){
+        cGen(p2);
+        r2 = indexR;
+        !(p1->kind.exp == ConstK) ? cGen(p1):NULL;
+        r1 = indexR;
+        printOp(tree);
+        fprintf(code, " $t%d", getTempReg());
+        (p1->kind.exp == ConstK) ? cGen(p1):fprintf(code, " $t%d", r1);
+        fprintf(code, " $t%d", r2);
+
+      } else if(p1->kind.exp == OpK && p2->kind.exp != OpK){
+        cGen(p1);
+        r1 = indexR;
+        !(p2->kind.exp == ConstK) ? cGen(p2):NULL;
+        r2 = indexR;
+        printOp(tree);
+        fprintf(code, " $t%d", getTempReg());
+        fprintf(code, " $t%d", r1);
+        (p2->kind.exp == ConstK) ? cGen(p2):fprintf(code, " $t%d", r2);
+
+      } else {
+        !(p1->kind.exp == ConstK) ? cGen(p1):NULL;
+        r1 = indexR;
+        !(p2->kind.exp == ConstK) ? cGen(p2):NULL;
+        r2 = indexR;
+        printOp(tree);
+        fprintf(code, " $t%d", getTempReg());
+        (p1->kind.exp == ConstK) ? cGen(p1):fprintf(code, " $t%d", r1);
+        (p2->kind.exp == ConstK) ? cGen(p2):fprintf(code, " $t%d", r2);
+      }
+      fprintf(code, "\n");
+      break; /* OpK */
 
     default:
       break;
@@ -193,20 +323,8 @@ static void cGen( TreeNode * tree)
  * of the code file, and is used to print the
  * file name as a comment in the code file
  */
-void codeGen(TreeNode * syntaxTree, char * codefile)
-{  char * s = malloc(strlen(codefile)+7);
-   strcpy(s,"File: ");
-   strcat(s,codefile);
-   emitComment("TINY Compilation to TM Code");
-   emitComment(s);
-   /* generate standard prelude */
-   emitComment("Standard prelude:");
-   emitRM("LD",mp,0,ac,"load maxaddress from location 0");
-   emitRM("ST",ac,0,ac,"clear location 0");
-   emitComment("End of standard prelude.");
-   /* generate code for TINY program */
+void codeGen(TreeNode * syntaxTree)
+{
    cGen(syntaxTree);
-   /* finish */
-   emitComment("End of execution.");
-   emitRO("HALT",0,0,0,"");
+   fprintf(code, "HALT");
 }

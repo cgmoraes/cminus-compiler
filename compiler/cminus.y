@@ -105,7 +105,7 @@ param_lista : param_lista VIRG param
 tipo_espec : INT
             {
               $$ = newExpNode(TypeK);
-              $$->attr.name = "inteiro";
+              $$->attr.name = "int";
               $$->type = IntegerK;
             }
             | VOID
@@ -273,7 +273,7 @@ input_decl   : IN EPAREN DPAREN
                      copyString(tokenString);
                  }
             ;
-output_decl  : OUT EPAREN var DPAREN
+output_decl  : OUT EPAREN exp DPAREN
                  { $$ = newStmtNode(OutK);
                    $$->attr.name = copyString(tokenString);
                    $$->child[0] = $3;

@@ -12,7 +12,7 @@ BSN = bison
 
 TMP = lex.yy.c cminus.tab.c cminus.tab.h
 
-OBJS = main.o cminus.tab.o lex.yy.o util.o symtab.o analyze.o # code.o cgen.o 
+OBJS = main.o cminus.tab.o lex.yy.o util.o symtab.o analyze.o code.o cgen.o
 
 all: cminus clean
 
@@ -46,11 +46,12 @@ analyze.o: analyze.c globals.h symtab.h analyze.h
 	@echo "running: analyze"
 	$(CC) -c analyze.c
 
-# code.o: code.c code.h globals.h
-# 	$(CC) -c code.c
+code.o: code.c code.h globals.h
+	@echo "running: code"
+	$(CC) -c code.c
 
-# cgen.o: cgen.c globals.h symtab.h code.h cgen.h
-# 	$(CC) -c cgen.c
+ cgen.o: cgen.c globals.h symtab.h code.h cgen.h
+	$(CC) -c cgen.c
 
 # tm: tm.c
 # 	$(CC) tm.c -o tm

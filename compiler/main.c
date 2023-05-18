@@ -15,7 +15,7 @@
 /* set NO_CODE to TRUE to get a compiler that does not
  * generate code
  */
-#define NO_CODE TRUE
+#define NO_CODE FALSE
 
 #include "util.h"
 #if NO_PARSE
@@ -89,13 +89,13 @@ int main( int argc, char * argv[] )
     int fnlen = strcspn(pgm,".");
     codefile = (char *) calloc(fnlen+4, sizeof(char));
     strncpy(codefile,pgm,fnlen);
-    strcat(codefile,".tm");
+    strcat(codefile,".ic");
     code = fopen(codefile,"w");
     if (code == NULL)
     { printf("Unable to open %s\n",codefile);
       exit(1);
     }
-    codeGen(syntaxTree,codefile);
+    codeGen(syntaxTree);
     fclose(code);
   }
 #endif
