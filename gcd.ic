@@ -1,0 +1,26 @@
+
+FUN int main
+ARG int u
+ARG int v
+LOAD $t0 v
+IGUAL $t1 $t0 0
+IFF $t1 L0
+LOAD $t2 u
+RET $t2
+GOTO L1
+LAB L0
+LOAD $t3 v
+PARAM $t3
+LOAD $t4 u
+LOAD $t5 v
+SOBRE $t6 $t4 $t5
+LOAD $t7 v
+VEZES $t8 $t6 $t7
+LOAD $t9 u
+MENOS $t10 $t9 $t8
+PARAM $t10
+CALL $t11 main 2
+RET $t11
+LAB L1
+END main
+HALT

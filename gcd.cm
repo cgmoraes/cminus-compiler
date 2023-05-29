@@ -1,0 +1,10 @@
+/* Um programa para calcular o mdc
+   segundo o algoritmo de Euclides. */
+
+int main (int u, int v)
+{       
+	if (v == 0) return u ;
+	else return main(v,u-u/v*v);
+	/* u-u/v*v == u mod v */
+}
+

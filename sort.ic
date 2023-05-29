@@ -1,0 +1,147 @@
+AARR vet(10) global
+
+FUN int minloc
+ARG int a
+ARG int low
+ARG int high
+ALLOC i minloc
+ALLOC x minloc
+ALLOC k minloc
+LOAD $t0 low
+ASSIGN $t1 $t0
+STORE k $t1
+LOAD $t2 low
+VEZES $t3 $t2 4
+LOAD $t4 a($t3)
+ASSIGN $t5 $t4
+STORE x $t5
+LOAD $t6 low
+MAIS $t7 $t6 1
+ASSIGN $t8 $t7
+STORE i $t8
+LAB L0
+LOAD $t9 i
+LOAD $t10 high
+MENORQ $t11 $t9 $t10
+WHILE $t11 L1
+LOAD $t12 i
+VEZES $t13 $t12 4
+LOAD $t14 a($t13)
+LOAD $t15 x
+MENORQ $t16 $t14 $t15
+IFF $t16 L2
+LOAD $t17 i
+VEZES $t18 $t17 4
+LOAD $t19 a($t18)
+ASSIGN $t20 $t19
+STORE x $t20
+LOAD $t21 i
+ASSIGN $t22 $t21
+STORE k $t22
+GOTO L3
+LAB L2
+LAB L3
+LOAD $t23 i
+MAIS $t24 $t23 1
+ASSIGN $t25 $t24
+STORE i $t25
+GOTO L0
+LAB L1
+LOAD $t26 k
+RET $t26
+END minloc
+
+FUN void sort
+ARG int a
+ARG int low
+ARG int high
+ALLOC i sort
+ALLOC k sort
+LOAD $t27 low
+ASSIGN $t28 $t27
+STORE i $t28
+LAB L4
+LOAD $t29 high
+MENOS $t30 $t29 1
+LOAD $t31 i
+MENORQ $t0 $t31 $t30
+WHILE $t0 L5
+ALLOC t sort
+LOAD $t1 a
+PARAM $t1
+LOAD $t2 i
+PARAM $t2
+LOAD $t3 high
+PARAM $t3
+CALL $t4 minloc 3
+ASSIGN $t5 $t4
+STORE k $t5
+LOAD $t6 k
+VEZES $t7 $t6 4
+LOAD $t8 a($t7)
+ASSIGN $t9 $t8
+STORE t $t9
+LOAD $t10 i
+VEZES $t11 $t10 4
+LOAD $t12 a($t11)
+ASSIGN $t13 $t12
+LOAD $t14 k
+VEZES $t15 $t14 4
+STORE a($t15) $t13
+LOAD $t16 t
+ASSIGN $t17 $t16
+LOAD $t18 i
+VEZES $t19 $t18 4
+STORE a($t19) $t17
+LOAD $t20 i
+MAIS $t21 $t20 1
+ASSIGN $t22 $t21
+STORE i $t22
+GOTO L4
+LAB L5
+END sort
+
+FUN void main
+ALLOC i main
+ASSIGN $t23 0
+STORE i $t23
+LAB L6
+LOAD $t24 i
+MENORQ $t25 $t24 10
+WHILE $t25 L7
+INPUT $t26
+ASSIGN $t27 $t26
+LOAD $t28 i
+VEZES $t29 $t28 4
+STORE vet($t29) $t27
+LOAD $t30 i
+MAIS $t31 $t30 1
+ASSIGN $t0 $t31
+STORE i $t0
+GOTO L6
+LAB L7
+LOAD $t1 vet
+PARAM $t1
+MAIS $t2 0 0
+PARAM $t2
+MAIS $t3 10 0
+PARAM $t3
+CALL $t4 sort 3
+ASSIGN $t5 0
+STORE i $t5
+LAB L8
+LOAD $t6 i
+MENORQ $t7 $t6 10
+WHILE $t7 L9
+LOAD $t8 i
+VEZES $t9 $t8 4
+LOAD $t10 vet($t9)
+OUTPUT $t10
+LOAD $t11 i
+MAIS $t12 $t11 1
+ASSIGN $t13 $t12
+STORE i $t13
+GOTO L8
+LAB L9
+END main
+HALT

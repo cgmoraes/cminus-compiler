@@ -1,4 +1,0 @@
-int main(int a, int b){
-    int x; int c;
-    x = 2;
-}
