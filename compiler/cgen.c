@@ -9,7 +9,6 @@
 
 #include "globals.h"
 #include "symtab.h"
-#include "code.h"
 #include "cgen.h"
 
 static int indexR = -1;
@@ -24,38 +23,17 @@ static int getTempReg()
 
 static void printOp(TreeNode * tree)
 { switch (tree->attr.op) {
-    case MAIS :
-        fprintf(code, "MAIS");
-        break;
-    case MENOS :
-        fprintf(code, "MENOS");
-        break;
-    case VEZES :
-        fprintf(code, "VEZES");
-        break;
-    case SOBRE :
-        fprintf(code, "SOBRE");
-        break;
-    case MENORQ :
-        fprintf(code, "MENORQ");
-        break;
-    case MENORI :
-        fprintf(code, "MENORI");
-        break;
-    case MAIORQ :
-        fprintf(code, "MAIORQ");
-        break;
-    case MAIORI :
-        fprintf(code, "MAIORI");
-        break;
-    case IGUAL :
-        fprintf(code, "IGUAL");
-        break;
-    case DIF :
-        fprintf(code, "DIF");
-        break;
-    default:
-        break;
+    case MAIS : fprintf(code, "MAIS"); break;
+    case MENOS : fprintf(code, "MENOS"); break;
+    case VEZES : fprintf(code, "VEZES"); break;
+    case SOBRE : fprintf(code, "SOBRE"); break;
+    case MENORQ : fprintf(code, "MENORQ"); break;
+    case MENORI : fprintf(code, "MENORI"); break;
+    case MAIORQ : fprintf(code, "MAIORQ"); break;
+    case MAIORI : fprintf(code, "MAIORI"); break;
+    case IGUAL : fprintf(code, "IGUAL"); break;
+    case DIF : fprintf(code, "DIF"); break;
+    default: break;
   }
 
 }
@@ -206,6 +184,8 @@ static void genStmt( TreeNode * tree)
             r2 = indexR;
             fprintf(code, " $t%d\n", r1);
           }
+
+
           if (tree->child[0]->kind.exp == ArrK){
             p1 = tree->child[0];
             r1 = indexR;

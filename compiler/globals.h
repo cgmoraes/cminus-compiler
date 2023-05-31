@@ -63,7 +63,7 @@ extern int lineno; /* source line number for listing */
 /**************************************************/
 
 typedef enum {StmtK,ExpK} NodeKind;
-typedef enum {IfK,WhileK,AssignK,VarK,FunK,CallK, ReturnK,InK, OutK} StmtKind;
+typedef enum {IfK,WhileK,AssignK,VarK,FunK,CallK,ReturnK,InK,OutK} StmtKind;
 typedef enum {OpK,ConstK,IdK, ArrK, TypeK} ExpKind;
 
 /* ExpType is used for type checking */
