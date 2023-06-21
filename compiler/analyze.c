@@ -66,7 +66,10 @@ static void insertNode( TreeNode * t)
           if (l == NULL) {
             
             if (st_lookup_scope(t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
-            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
+            else if(t->attr.len > 0){
+              st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location);
+              location += t->attr.len;
+            } else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
           
           } else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
@@ -84,7 +87,7 @@ static void insertNode( TreeNode * t)
         {
           BucketList l = st_lookup(t->attr.scope, t->attr.name);
           if (l == NULL) typeError(t, "Error 5: Invalid call. Not declared.");
-          else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
+          else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
         }
         break;
       case ReturnK:
@@ -191,5 +194,6 @@ void buildSymtab(TreeNode * syntaxTree)
  */
 void typeCheck(TreeNode * syntaxTree)
 { traverse(syntaxTree, nullProc, checkNode);
-  checkMain(syntaxTree);  
+  checkMain(syntaxTree);
+  buildCSVSymTab();  
 }

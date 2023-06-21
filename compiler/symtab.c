@@ -136,7 +136,7 @@ void printSymTab(FILE * listing)
     fprintf(listing,"Scope    ");
     fprintf(listing,"%s\n",scopes[i]);
     fprintf(listing,"-----------------------------------------------------------\n");
-    fprintf(listing,"Type     Variable Name  Line Numbers\n");
+    fprintf(listing,"Type     Variable Name  Memloc  Line Numbers\n");
     fprintf(listing,"-----------------------------------------------------------\n");
     int row = (i == 0) ? 0: scopeHash(scopes[i]);
     for (j=0;j<SIZE;++j)
@@ -146,6 +146,7 @@ void printSymTab(FILE * listing)
         { LineList t = l->lines;
           fprintf(listing,"%-7s  ",l->type);
           fprintf(listing,"%-14s ",l->name);
+          fprintf(listing,"%-7d ",l->memloc);
           while (t != NULL)
           { fprintf(listing,"%2d ",t->lineno);
             t = t->next;
@@ -157,3 +158,29 @@ void printSymTab(FILE * listing)
     }
   }
 } /* printSymTab */
+
+void buildCSVSymTab()
+{
+  int i, j;
+  FILE * symtab;
+  symtab = fopen("compiler/symtab.csv","w");
+  fprintf(symtab, "Scope,Type,Variable Name,Memloc,Line Numbers\n");
+  for (i=0;scopes[i] != NULL;++i){
+    int row = (i == 0) ? 0: scopeHash(scopes[i]);
+    for (j=0;j<SIZE;++j){
+      if (hashTable[row][j] != NULL)
+      { BucketList l = hashTable[row][j];
+        while (l != NULL)
+        { LineList t = l->lines;
+          fprintf(symtab,"%s,%s,%s,%d,",l->scope,l->type,l->name,l->memloc);
+          while (t != NULL)
+          { fprintf(symtab,"%d ",t->lineno);
+            t = t->next;
+          }
+          fprintf(symtab,"\n");
+          l = l->next;
+        }
+      }
+    }
+  }
+}

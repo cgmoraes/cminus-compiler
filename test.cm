@@ -1,0 +1,4 @@
+int main(void){
+    int x; int u; int y;
+    x = 2+ y/ 1;
+}

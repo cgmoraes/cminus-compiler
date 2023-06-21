@@ -56,5 +56,6 @@ int st_lookup_scope( char * name);
  */
 void printSymTab(FILE * listing);
 
+void buildCSVSymTab();
 
 #endif
