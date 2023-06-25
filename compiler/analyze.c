@@ -11,7 +11,7 @@
 #include "analyze.h"
 
 /* counter for variable memory locations */
-static int location = 0;
+static int location = 1;
 
 static void typeError(TreeNode * t, char * message)
 { fprintf(listing,"Type error at line %d: %s\n",t->lineno,message);

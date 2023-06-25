@@ -156,9 +156,9 @@ static void genStmt( TreeNode * tree)
         {
           cGen(tree->child[1]);
           r1 = indexR;
-          fprintf(code, "ASSIGN $t%d", getTempReg());
-          r2 = indexR;
-          fprintf(code, " $t%d\n", r1);
+          // fprintf(code, "ASSIGN $t%d", getTempReg());
+          // r2 = indexR;
+          // fprintf(code, " $t%d\n", r1);
 
 
           if (tree->child[0]->kind.exp == ArrK){
@@ -171,7 +171,7 @@ static void genStmt( TreeNode * tree)
             fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r2, r3);
             r4 = indexR;
             fprintf(code, "STORE $t%d %s($t%d)\n", r1, p1->attr.name, r4);
-          } else fprintf(code, "STORE $t%d %s\n", r2, tree->attr.name);
+          } else fprintf(code, "STORE $t%d %s\n", r1, tree->attr.name);
         }
         break; /* assign_k */
 

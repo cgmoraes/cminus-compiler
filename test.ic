@@ -1,13 +1,40 @@
-FUN int main
+FUN int gcd
+ARG int u
+ARG int v
+LOAD $t0 v
+ADDI $t1 $zero 0
+IGUAL $t2 $t0 $t1
+IFF $t2 L0
+LOAD $t3 u
+RET $t3
+GOTO L1
+LAB L0
+LOAD $t4 v
+PARAM $t4
+LOAD $t5 u
+LOAD $t6 v
+SOBRE $t7 $t5 $t6
+LOAD $t8 v
+VEZES $t9 $t7 $t8
+LOAD $t10 u
+MENOS $t11 $t10 $t9
+PARAM $t11
+CALL $t12 gcd 2
+RET $t12
+LAB L1
+END gcd
+FUN void main
 ALLOC x main
-ALLOC u main
 ALLOC y main
-LOAD $t0 y
-ADDI $t1 $zero 1
-SOBRE $t2 $t0 $t1
-ADDI $t3 $zero 2
-MAIS $t4 $t3 $t2
-ASSIGN $t5 $t4
-STORE x $t5
+INPUT $t13
+STORE $t13 x
+INPUT $t14
+STORE $t14 y
+LOAD $t15 x
+PARAM $t15
+LOAD $t16 y
+PARAM $t16
+CALL $t17 gcd 2
+OUTPUT $t17
 END main
 HALT
