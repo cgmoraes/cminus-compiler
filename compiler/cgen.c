@@ -57,7 +57,7 @@ static void genExp( TreeNode * tree)
       break;
 
     case ConstK :
-      fprintf(code, "ADDI $t%d $zero %d\n", getTempReg(), tree->attr.val);
+      fprintf(code, "ADDI $t%d $r0 %d\n", getTempReg(), tree->attr.val);
       break; /* ConstK */
     
     case IdK :
@@ -67,7 +67,7 @@ static void genExp( TreeNode * tree)
     case ArrK :
       cGen(tree->child[0]);
       r1 = indexR;
-      fprintf(code, "ADDI $t%d $zero 4\n", getTempReg());
+      fprintf(code, "ADDI $t%d $r0 4\n", getTempReg());
       r2 = indexR;
       fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r1, r2);
       r3 = indexR;
@@ -166,7 +166,7 @@ static void genStmt( TreeNode * tree)
             r1 = indexR;
             cGen(p1->child[0]);
             r2 = indexR;
-            fprintf(code, "ADDI $t%d $zero 4\n", getTempReg());
+            fprintf(code, "ADDI $t%d $r0 4\n", getTempReg());
             r3 = indexR;
             fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r2, r3);
             r4 = indexR;
@@ -198,7 +198,7 @@ static void genStmt( TreeNode * tree)
           p1 = tree->child[0];
           if (p1 != NULL){
             for(i=0;p1 != NULL;i++){
-              if (p1->kind.exp == ConstK) fprintf(code, "ADDI $t%d $zero %d\n", getTempReg(), p1->attr.val);
+              if (p1->kind.exp == ConstK) fprintf(code, "ADDI $t%d $r0 %d\n", getTempReg(), p1->attr.val);
               else {
                 switch (p1->nodekind) {
                   case StmtK:

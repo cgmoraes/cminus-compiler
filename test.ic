@@ -2,7 +2,7 @@ FUN int gcd
 ARG int u
 ARG int v
 LOAD $t0 v
-ADDI $t1 $zero 0
+ADDI $t1 $r0 0
 IGUAL $t2 $t0 $t1
 IFF $t2 L0
 LOAD $t3 u
