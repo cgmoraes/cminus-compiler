@@ -1,40 +1,53 @@
-FUN int gcd
-ARG int u
-ARG int v
-LOAD $t0 v
-ADDI $t1 $r0 0
-IGUAL $t2 $t0 $t1
-IFF $t2 L0
-LOAD $t3 u
-RET $t3
+FUN int fib
+ARG int n
+ALLOC a fib
+ALLOC b fib
+ALLOC c fib
+ALLOC i fib
+ADDI $t1 $t0 0
+STORE $t1 a
+ADDI $t2 $t0 1
+STORE $t2 b
+ADDI $t3 $t0 2
+STORE $t3 i
+LOAD $t4 n
+ADDI $t5 $t0 0
+IGUAL $t6 $t4 $t5
+IFF $t6 L0
+LOAD $t7 a
+RET $t7
 GOTO L1
 LAB L0
-LOAD $t4 v
-PARAM $t4
-LOAD $t5 u
-LOAD $t6 v
-SOBRE $t7 $t5 $t6
-LOAD $t8 v
-VEZES $t9 $t7 $t8
-LOAD $t10 u
-MENOS $t11 $t10 $t9
-PARAM $t11
-CALL $t12 gcd 2
-RET $t12
 LAB L1
-END gcd
+LAB L2
+LOAD $t8 i
+LOAD $t9 n
+MENORI $t10 $t8 $t9
+IFF $t10 L3
+LOAD $t11 a
+LOAD $t12 b
+MAIS $t13 $t11 $t12
+STORE $t13 c
+LOAD $t14 b
+STORE $t14 a
+LOAD $t15 c
+STORE $t15 b
+LOAD $t16 i
+ADDI $t17 $t0 1
+MAIS $t18 $t16 $t17
+STORE $t18 i
+GOTO L2
+LAB L3
+LOAD $t19 b
+RET $t19
+END fib
 FUN void main
-ALLOC x main
-ALLOC y main
-INPUT $t13
-STORE $t13 x
-INPUT $t14
-STORE $t14 y
-LOAD $t15 x
-PARAM $t15
-LOAD $t16 y
-PARAM $t16
-CALL $t17 gcd 2
-OUTPUT $t17
+ALLOC n main
+ADDI $t20 $t0 9
+STORE $t20 n
+LOAD $t21 n
+PARAM $t21
+CALL $t28 fib 1
+OUTPUT $t28
 END main
 HALT

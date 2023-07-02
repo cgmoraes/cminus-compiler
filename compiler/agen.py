@@ -22,11 +22,11 @@ def deallocateReg(f):
     while (nextLine := f.readline().strip()) != "":
         if "$t" in nextLine: 
             for i, r in enumerate(reg):
-                if i == 0: continue
+                if i == 0 or i == 28: continue
                 if r is not None and re.search(r"{}(?![0-9])".format(re.escape(r)), nextLine) and i not in index: index.add(i)
 
     for i in range(len(reg)):
-        if i > 0 and i not in index: reg[i] = None
+        if i > 0 and i < 28 and i not in index: reg[i] = None
 
     f.seek(pos)
 
@@ -69,11 +69,11 @@ def genAsm(file):
                         asm.write(f".{quad[2]}\n")
 
                         if quad[2] != "main":
-                            asm.write("SW $r31 $r29 1\n")
+                            asm.write("SW $r29 $r31 1\n")
                             asm.write("ADDI $r30 $r30 1\n")
 
                     case "RET":
-                        asm.write("ADDI $r28 $r28 0\n")
+                        asm.write(f"ADDI $t{reg.index(quad[1])} $t28 0\n")
 
                     case "ALLOC":
                         asm.write("ADDI $r30 $r30 1\n")
@@ -87,37 +87,39 @@ def genAsm(file):
                     case "CALL":
 
                         ## Empilha
-                        saveds_reg, saveds_reg[0] = [None]*numregs, 0
+                        # saveds_reg = [None]*numregs
+                        # saveds_reg[0] = 0
                         for i, r in enumerate(reg.copy()):
-                            if i > 0 and r is not None:
-                                asm.write(f"SW $t{i} $r30 0\n")
+                            if i > 0 and i < 28 and r is not None:
+                                asm.write(f"SW $r30 $t{i} 0\n")
                                 asm.write("ADDI $r30 $r30 1\n")
-                                saveds_reg[i] = r
+                                # saveds_reg[i] = r
                             
-                        reg, reg[0] = [None]*numregs, 0
+                        # reg = [None]*numregs
+                        # reg[0] = 0
 
                         ## Call
-                        asm.write("SW $r29 $r30 0\n")
-                        asm.write("ADDI $r29 $r30 0\n")
+                        asm.write("SW $r30 $r29 0\n")
+                        asm.write("ADDI $r30 $r29 0\n")
                         asm.write("ADDI $r30 $r30 1\n")
 
                         for i, r in enumerate(params_reg):
-                            asm.write(f"SW $t{r} $r29 {df.loc[((df['Scope'] == quad[2]) & (df['Variable Name'] == params[quad[2]][i])), 'Scope Memloc'].values[0]}\n")
+                            asm.write(f"SW $r29 $t{r} {df.loc[((df['Scope'] == quad[2]) & (df['Variable Name'] == params[quad[2]][i])), 'Scope Memloc'].values[0]}\n")
                         
                         params_reg = []
                         asm.write(f"JAL {quad[2]}\n")
 
                         # asm.write(f"ADDI $t{saveds_reg.index(quad[1])} $r31 0\n")
-                        asm.write("ADDI $r30 $r29 0\n")
+                        asm.write("ADDI $r29 $r30 0\n")
                         asm.write("LW $r29 $r29 0\n")
 
                         ## Desempilha
-                        reg = saveds_reg
+                        # reg = saveds_reg
                         for i, r in enumerate(reversed(reg.copy())):
                             index = len(reg) - 1 - i
-                            if index > 0 and r is not None:
+                            if index > 0 and index < 28 and r is not None:
                                 asm.write("SUBI $r30 $r30 1\n")
-                                asm.write(f"LW $t{index} $r30 0\n")
+                                asm.write(f"LW $r30 $t{index} 0\n")
 
 
                     case "LOAD":
@@ -134,7 +136,7 @@ def genAsm(file):
                         #     offset = 0
                         #     var = quad[2]
 
-                        else: asm.write(f"LW $t{reg.index(quad[1])} $r29 {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                        else: asm.write(f"LW $r29 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
                     
                     case "STORE":
                         scopevar = scope
@@ -150,47 +152,46 @@ def genAsm(file):
                         #     offset = 0
                         #     var = quad[2]
 
-                        else: asm.write(f"SW $t{reg.index(quad[1])} $r29 {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                        else: asm.write(f"SW $r29 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
 
                     case "LAB":
                         asm.write(f".{quad[1]}\n")
 
                     case "MAIS":
-                        asm.write(f"ADD $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"ADD $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "ADDI":
-                        if quad[2] == "$r0": asm.write(f"ADDI $t{reg.index(quad[1])} {quad[2]} {quad[3]}\n")
-                        else: asm.write(f"ADDI $t{reg.index(quad[1])} $t{reg.index(quad[2])} {quad[3]}\n")
+                        asm.write(f"ADDI $t{reg.index(quad[2])} $t{reg.index(quad[1])} {quad[3]}\n")
 
                     case "MENOS":
-                        asm.write(f"SUB $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SUB $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
 
                     case "VEZES":
-                        asm.write(f"MULT $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"MULT $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "SOBRE":
-                        asm.write(f"DIV $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"DIV $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
 
                     case "MENORQ":
-                        asm.write(f"LT $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SLT $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
 
                     case "MENORI":
-                        asm.write(f"LE $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SLET $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
 
                     case "MAIORQ":
-                        asm.write(f"GT $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SGT $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
 
                     case "MAIORI":
-                        asm.write(f"GE $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SGET $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
 
                     case "IGUAL":
-                        asm.write(f"AND $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SET $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "DIF":
-                        asm.write(f"DF $t{reg.index(quad[1])} $t{reg.index(quad[2])} $t{reg.index(quad[3])}\n")
+                        asm.write(f"SDT $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "IFF":
-                        asm.write(f"BEQ $r0 $t{reg.index(quad[1])} {quad[2]}\n")
+                        asm.write(f"BEQ $t0 $t{reg.index(quad[1])} {quad[2]}\n")
 
                     case "GOTO":
                         asm.write(f"J {quad[1]}\n")
@@ -198,13 +199,14 @@ def genAsm(file):
                     case "END":
                         if quad[1] != "main":
                             # asm.write(f".END {quad[1]}\n")
-                            asm.write("LW $r31 $r29 1\n")
+                            asm.write("LW $r29 $r31 1\n")
                             asm.write("JR $r31\n")
 
                     case "HALT":
                         asm.write("HALT\n")
 
                     case _: asm.write(f"Unknown - {quad[0]}\n")
+                
                 deallocateReg(f)
 
 def getAddr():
@@ -215,6 +217,13 @@ def getAddr():
             return i
     
     return None
+
+def searchLabel(labels, line, asm, addr, lineno, beq=False):
+    for l in labels.keys(): 
+        if l == addr.strip(): 
+            labelno = str(labels[l]-lineno-1) if beq else str(labels[l])
+            asm[lineno] = line.replace(l, labelno) 
+            break
 
 def genLabels(file):
     global asm
@@ -228,13 +237,13 @@ def genLabels(file):
         labels[asm[i][1:].strip()] = i
         asm.pop(i)
 
+    beq = False
     with open(f"{file}.asm", "w") as f:
         for i, line in enumerate(asm.copy()):
             for addr in line.split(" "):
-                for l in labels.keys(): 
-                    if l == addr.strip(): 
-                        asm[i] = line.replace(l, str(labels[l]))
-                        break
+                if addr == "BEQ": beq = True
+                searchLabel(labels, line, asm, addr, i, beq)
+            beq = False
             f.write(asm[i])
 
 file = sys.argv[1]
@@ -242,8 +251,9 @@ df = pd.read_csv("compiler/symtab.csv")
 df["Scope Memloc"] = df.apply(getMemLoc, axis=1)
 df.sort_values(by='Memloc')
 
-numregs = int(sys.argv[2])
-reg, reg[0] = [None]*numregs, 0
+reg = [None]*29
+reg[0] = "$t0"
+reg[28] = "$t28"
 params_reg = []
 asm = []
 

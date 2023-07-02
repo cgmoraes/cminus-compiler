@@ -11,14 +11,19 @@
 #include "symtab.h"
 #include "cgen.h"
 
-static int indexR = -1;
+static int indexR = 0;
 static int indexL = -1;
+static int r28 = 0;
 static void cGen( TreeNode * tree);
 
 static int getTempReg()
 {
-  // indexR = (indexR+1)%32;
   indexR++;
+  if(r28 > 0) {
+    indexR = r28+1;
+    r28 = 0;
+  }
+  indexR += (indexR == 28) ? 1:0;
   return indexR;
 }
 
@@ -57,7 +62,7 @@ static void genExp( TreeNode * tree)
       break;
 
     case ConstK :
-      fprintf(code, "ADDI $t%d $r0 %d\n", getTempReg(), tree->attr.val);
+      fprintf(code, "ADDI $t%d $t0 %d\n", getTempReg(), tree->attr.val);
       break; /* ConstK */
     
     case IdK :
@@ -67,7 +72,7 @@ static void genExp( TreeNode * tree)
     case ArrK :
       cGen(tree->child[0]);
       r1 = indexR;
-      fprintf(code, "ADDI $t%d $r0 4\n", getTempReg());
+      fprintf(code, "ADDI $t%d $t0 4\n", getTempReg());
       r2 = indexR;
       fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r1, r2);
       r3 = indexR;
@@ -145,7 +150,7 @@ static void genStmt( TreeNode * tree)
           l2 = indexL;
           cGen(p1);
           r1 = indexR;
-          fprintf(code, "WHILE $t%d L%d\n", r1, l2);
+          fprintf(code, "IFF $t%d L%d\n", r1, l2);
           cGen(p2);
           fprintf(code, "GOTO L%d\n", l1);
           fprintf(code, "LAB L%d\n", l2);
@@ -166,7 +171,7 @@ static void genStmt( TreeNode * tree)
             r1 = indexR;
             cGen(p1->child[0]);
             r2 = indexR;
-            fprintf(code, "ADDI $t%d $r0 4\n", getTempReg());
+            fprintf(code, "ADDI $t%d $t0 4\n", getTempReg());
             r3 = indexR;
             fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r2, r3);
             r4 = indexR;
@@ -198,7 +203,7 @@ static void genStmt( TreeNode * tree)
           p1 = tree->child[0];
           if (p1 != NULL){
             for(i=0;p1 != NULL;i++){
-              if (p1->kind.exp == ConstK) fprintf(code, "ADDI $t%d $r0 %d\n", getTempReg(), p1->attr.val);
+              if (p1->kind.exp == ConstK) fprintf(code, "ADDI $t%d $t0 %d\n", getTempReg(), p1->attr.val);
               else {
                 switch (p1->nodekind) {
                   case StmtK:
@@ -216,7 +221,9 @@ static void genStmt( TreeNode * tree)
               p1 = p1->sibling;
             } 
           }
-          fprintf(code, "CALL $t%d %s %d\n", getTempReg(), tree->attr.name, i);
+          fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i);
+          r28 = indexR;
+          indexR = 28;
           break;
         }
 
@@ -235,7 +242,9 @@ static void genStmt( TreeNode * tree)
         break;
 
       case InK:
-        fprintf(code, "INPUT $t%d\n", getTempReg());
+        fprintf(code, "INPUT $t28\n");
+        r28 = indexR;
+        indexR = 28;
         break;
 
       case OutK:

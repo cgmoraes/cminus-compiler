@@ -1,21 +1,26 @@
 import sys
 
 file = sys.argv[1]
-numregs = int(sys.argv[2])
-regs = {"$r0": format(0, "05b")}
-regs.update({f"$t{i}": format(i, "05b") for i in range(1,numregs)})
+numregs = 29
+regs = {f"$t{i}": format(i, "05b") for i in range(numregs)}
 regs.update({f"$r{i}": format(i, "05b") for i in range(numregs, 32)})
 
 op = {
         "R": {
-                "AND" : "100100",
-                "OR" : "100101",
-                "ADD" : "100000",
-                "SUB" : "100010",
-                "MULT" : "011000",
-                "DIV" : "011010",
-                "SLL" : "000000",
-                "SRL" : "000001"
+                "AND": "100100",
+                "OR": "100101",
+                "ADD": "100000",
+                "SUB": "100010",
+                "SLT": "101010",
+                "SGT": "111010",
+                "MULT": "011000",
+                "DIV": "011010",
+                "SLL": "000000",
+                "SRL": "000001",
+                "SLET": "101011",
+                "SGET": "111011",
+                "SET": "000010",
+                "SDT": "000011"
             },
         "I": {
                 "ADDI": "001000",
@@ -33,7 +38,9 @@ op = {
                 "JAL": "000011",
                 "JR": "000001"
             },
-        "HALT": "100000"
+        "HALT": "111111",
+        "IN": "100001",
+        "OUT": "110001"
     }
 
 with open(f"{file}.bin", "w") as b:
@@ -51,5 +58,7 @@ with open(f"{file}.bin", "w") as b:
                 else:
                     b.write(f"{op['J'][quad[0]]}{format(int(quad[1]),'026b')}\n")
             else:
-                if "HALT" in quad[0]: b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
+                if "IN" in quad[0]: b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
+                elif "OUT" in quad[0]: b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
+                elif "HALT" in quad[0]: b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
                 else: b.write(f"{quad[0]}\n")
