@@ -29,6 +29,7 @@ typedef struct BucketListRec
      char * type;
      LineList lines;
      int memloc ; /* memory location for variable */
+     int len;
      struct BucketListRec * next;
    } * BucketList;
 
@@ -39,7 +40,7 @@ void st_insert_scope(char* scope);
  * loc = memory location is inserted only the
  * first time, otherwise ignored
  */
-void st_insert( BucketList l, char * scope, char * name, char * type, int lineno, int loc );
+void st_insert( BucketList l, char * scope, char * name, char * type, int lineno, int len, int loc );
 
 BucketList st_lookup_decl(  char *scope, char*name);
 

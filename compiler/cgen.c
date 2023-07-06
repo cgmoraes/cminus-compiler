@@ -72,11 +72,12 @@ static void genExp( TreeNode * tree)
     case ArrK :
       cGen(tree->child[0]);
       r1 = indexR;
-      fprintf(code, "ADDI $t%d $t0 4\n", getTempReg());
-      r2 = indexR;
-      fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r1, r2);
-      r3 = indexR;
-      fprintf(code, "LOAD $t%d %s($t%d)\n", getTempReg(), tree->attr.name, r3);
+      // fprintf(code, "ADDI $t%d $t%d %s\n", getTempReg(), r1, tree->attr.name);
+      // r2 = indexR;
+      // fprintf(code, "MAIS $t%d $r29 $t%d\n", getTempReg(), r2);
+      // r3 = indexR;
+      // fprintf(code, "LOAD $t%d $t%d(0)\n", getTempReg(), r3);
+      fprintf(code, "LOAD $t%d %s($t%d)\n", getTempReg(), tree->attr.name, r1);
       break;
 
     case OpK :
@@ -171,11 +172,12 @@ static void genStmt( TreeNode * tree)
             r1 = indexR;
             cGen(p1->child[0]);
             r2 = indexR;
-            fprintf(code, "ADDI $t%d $t0 4\n", getTempReg());
-            r3 = indexR;
-            fprintf(code, "VEZES $t%d $t%d $t%d\n", getTempReg(), r2, r3);
-            r4 = indexR;
-            fprintf(code, "STORE $t%d %s($t%d)\n", r1, p1->attr.name, r4);
+            // fprintf(code, "ADDI $t%d $t%d %s\n", getTempReg(), r1, tree->attr.name);
+            // r2 = indexR;
+            // fprintf(code, "MAIS $t%d $r29 $t%d\n", getTempReg(), r2);
+            // r3 = indexR;
+            // fprintf(code, "STORE $t%d $t%d(0)\n", getTempReg(), r3);
+            fprintf(code, "STORE $t%d %s($t%d)\n", r1, p1->attr.name, r2);
           } else fprintf(code, "STORE $t%d %s\n", r1, tree->attr.name);
         }
         break; /* assign_k */
@@ -224,15 +226,12 @@ static void genStmt( TreeNode * tree)
           fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i);
           r28 = indexR;
           indexR = 28;
+          fprintf(code, "MAIS $t%d $t0 $t28\n", getTempReg());
           break;
         }
 
       case ReturnK:
         if (tree->child[0] == NULL) fprintf(code, "RET");
-        else if(tree->child[0]->kind.exp == ConstK) {
-          fprintf(code, "RET");
-          cGen(tree->child[0]);
-        }
         else {
           cGen(tree->child[0]);
           r1 = indexR;

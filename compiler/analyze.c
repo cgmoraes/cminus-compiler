@@ -67,9 +67,9 @@ static void insertNode( TreeNode * t)
             
             if (st_lookup_scope(t->attr.name)) typeError(t, "Error 7: Invalid declaration. Already declared as a function.");
             else if(t->attr.len > 0){
-              st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location);
+              st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, t->attr.len, location);
               location += t->attr.len;
-            } else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
+            } else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, t->attr.len, location++);
           
           } else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
@@ -79,7 +79,7 @@ static void insertNode( TreeNode * t)
           BucketList l = st_lookup_decl(t->attr.scope, t->attr.name);
           if (l == NULL){
             st_insert_scope(t->attr.name);
-            st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, location++);
+            st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, t->attr.len, location++);
           } else typeError(t, "Error 4: Invalid declaration. Already declared.");
         }
         break;
@@ -87,7 +87,7 @@ static void insertNode( TreeNode * t)
         {
           BucketList l = st_lookup(t->attr.scope, t->attr.name);
           if (l == NULL) typeError(t, "Error 5: Invalid call. Not declared.");
-          else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
+          else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, t->attr.len, 0);
         }
         break;
       case ReturnK:
@@ -103,23 +103,23 @@ static void insertNode( TreeNode * t)
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
             if (l == NULL) typeError(t, "Error 1: Not declared");
-            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
+            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, t->attr.len, 0);
           } 
           break;
         case ArrK:
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
             if (l == NULL) typeError(t, "Error 1: Not declared");
-            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, 0);
+            else st_insert(l, t->attr.scope, t->attr.name, t->attr.type, t->lineno, t->attr.len, 0);
           }
           break;
         case OpK:
           {
-            if(t->child[0]->kind.stmt == CallK && t->child[0]->type == VoidK){
-              typeError(t->child[0], "Error 2: Operation with void function.");
-            } else if(t->child[1]->kind.stmt == CallK && t->child[1]->type == VoidK){
-              typeError(t->child[1], "Error 2: Operation with void function.");
-            }
+            // if(t->child[0]->kind.stmt == CallK && t->child[0]->type == VoidK){
+            //   typeError(t->child[0], "Error 2: Operation with void function.");
+            // } else if(t->child[1]->kind.stmt == CallK && t->child[1]->type == VoidK){
+            //   typeError(t->child[1], "Error 2: Operation with void function.");
+            // }
           }
           break;
         case TypeK:

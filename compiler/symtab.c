@@ -65,7 +65,7 @@ void st_insert_scope(char* scope)
  * loc = memory location is inserted only the
  * first time, otherwise ignored
  */
-void st_insert( BucketList l, char * scope, char * name, char * type, int lineno, int loc )
+void st_insert( BucketList l, char * scope, char * name, char * type, int lineno, int len, int loc )
 {
   int row = (!strcmp(scope, "global")) ? 0: scopeHash(scope);
   int col = hash(name);
@@ -77,6 +77,7 @@ void st_insert( BucketList l, char * scope, char * name, char * type, int lineno
     l->lines = (LineList) malloc(sizeof(struct LineListRec));
     l->lines->lineno = lineno;
     l->memloc = loc;
+    l->len = len;
     l->lines->next = NULL;
     l->next = hashTable[row][col];
     hashTable[row][col] = l; }
@@ -164,7 +165,7 @@ void buildCSVSymTab()
   int i, j;
   FILE * symtab;
   symtab = fopen("compiler/symtab.csv","w");
-  fprintf(symtab, "Scope,Type,Variable Name,Memloc,Line Numbers\n");
+  fprintf(symtab, "Scope,Type,Variable Name,Memloc,Length,Line Numbers\n");
   for (i=0;scopes[i] != NULL;++i){
     int row = (i == 0) ? 0: scopeHash(scopes[i]);
     for (j=0;j<SIZE;++j){
@@ -172,7 +173,7 @@ void buildCSVSymTab()
       { BucketList l = hashTable[row][j];
         while (l != NULL)
         { LineList t = l->lines;
-          fprintf(symtab,"%s,%s,%s,%d,",l->scope,l->type,l->name,l->memloc);
+          fprintf(symtab,"%s,%s,%s,%d,%d,",l->scope,l->type,l->name,l->memloc,l->len);
           while (t != NULL)
           { fprintf(symtab,"%d ",t->lineno);
             t = t->next;

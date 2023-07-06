@@ -35,12 +35,12 @@ def genAsm(file):
 
     scope = 'global'
     params = {}
+    jump = False
 
     with open(f"{file}.asm", "w") as asm:
 
         with open(f"{file}.ic", "r") as f:
 
-            asm.write("J main\n")
             while (line := f.readline().strip()) != '':
                 quad = line.split(" ")
 
@@ -55,9 +55,12 @@ def genAsm(file):
 
                     case "OUTPUT":
                         asm.write(f"OUT $t{reg.index(quad[1])}\n")
-                        # params_reg.pop(0)
 
                     case "FUN":
+                        if not jump: 
+                            asm.write("J main\n")
+                            jump = True
+
                         scope = quad[2]
                         params[scope] = []
 
@@ -71,12 +74,20 @@ def genAsm(file):
                         if quad[2] != "main":
                             asm.write("SW $r29 $r31 1\n")
                             asm.write("ADDI $r30 $r30 1\n")
+                        else:
+                            asm.write("ADDI $r30 $r29 0\n")
 
                     case "RET":
                         asm.write(f"ADDI $t{reg.index(quad[1])} $t28 0\n")
+                        asm.write(f"J {scope}:END\n")
+                        
 
                     case "ALLOC":
                         asm.write("ADDI $r30 $r30 1\n")
+
+                    case "AARR":
+                        size = int(quad[1].split("(")[1][:-1])
+                        asm.write(f"ADDI $r30 $r30 {size}\n")
 
                     case "ARG":
                         asm.write("ADDI $r30 $r30 1\n")
@@ -124,44 +135,68 @@ def genAsm(file):
 
                     case "LOAD":
                         scopevar = scope
-                        var = quad[2]
+                        var = quad[2].strip().split("(")[0]
                         if not df.loc[df['Scope'] == scopevar, 'Variable Name'].isin([var]).any(): scopevar = 'global' 
+                        
+                        if "(" in quad[2]: 
+                            regoff = quad[2].split("(")[1][:-1]
 
-                        if "(" in var: 
-                            asm.write(f"Unknown {var}\n")
-                        #     addr = quad[2].split('(')
-                        #     var = addr[0]
-                        #     offset = addr[1].strip(")")
-                        # else: 
-                        #     offset = 0
-                        #     var = quad[2]
+                            if "global" in scopevar:
+                                asm.write(f"ADDI $t{reg.index(regoff)} $t{reg.index(regoff)} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                                asm.write(f"ADD $t0 $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"LW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
 
-                        else: asm.write(f"LW $r29 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
-                    
+                            else:
+                                asm.write(f"ADDI $t{reg.index(regoff)} $t{reg.index(regoff)} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                                asm.write(f"ADD $r29 $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"LW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
+                        
+                        else:
+                            if "global" in scopevar: 
+                                asm.write(f"LW $t0 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                            else: 
+                                asm.write(f"LW $r29 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+
+
                     case "STORE":
                         scopevar = scope
-                        var = quad[2]
+                        var = quad[2].strip().split("(")[0]
+                        
                         if not df.loc[df['Scope'] == scopevar, 'Variable Name'].isin([var]).any(): scopevar = 'global' 
+                        
+                        if "(" in quad[2]: 
+                            regoff = quad[2].split("(")[1][:-1]
 
-                        if "(" in var: 
-                            asm.write(f"Unknown {var}\n")
-                        #     addr = quad[2].split('(')
-                        #     var = addr[0]
-                        #     offset = addr[1].strip(")")
-                        # else: 
-                        #     offset = 0
-                        #     var = quad[2]
+                            if "global" in scopevar:
+                                asm.write(f"ADDI $t{reg.index(regoff)} $t{reg.index(regoff)} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                                asm.write(f"ADD $t0 $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"SW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
 
-                        else: asm.write(f"SW $r29 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                            else:
+                                asm.write(f"ADDI $t{reg.index(regoff)} $t{reg.index(regoff)} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                                asm.write(f"ADD $r29 $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"SW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
+                        
+                        else:
+                            if "global" in scopevar: 
+                                asm.write(f"SW $t0 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                            else: 
+                                asm.write(f"SW $r29 $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
 
                     case "LAB":
                         asm.write(f".{quad[1]}\n")
 
                     case "MAIS":
-                        asm.write(f"ADD $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
+                        if "$r29" in quad[2]: asm.write(f"ADD $r29 $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
+                        else: asm.write(f"ADD $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "ADDI":
-                        asm.write(f"ADDI $t{reg.index(quad[2])} $t{reg.index(quad[1])} {quad[3]}\n")
+                        scopevar = scope
+                        var = quad[3].strip()
+                        if df['Variable Name'].isin([var]).any():
+                            if not df.loc[df['Scope'] == scopevar, 'Variable Name'].isin([var]).any(): scopevar = 'global'
+                            asm.write(f"ADDI $t{reg.index(quad[2])} $t{reg.index(quad[1])} {df.loc[((df['Scope'] == scopevar) & (df['Variable Name'] == var)), 'Scope Memloc'].values[0]}\n")
+                        else: asm.write(f"ADDI $t{reg.index(quad[2])} $t{reg.index(quad[1])} {quad[3]}\n")
 
                     case "MENOS":
                         asm.write(f"SUB $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
@@ -198,7 +233,7 @@ def genAsm(file):
 
                     case "END":
                         if quad[1] != "main":
-                            # asm.write(f".END {quad[1]}\n")
+                            asm.write(f".{quad[1]}:END\n")
                             asm.write("LW $r29 $r31 1\n")
                             asm.write("JR $r31\n")
 
@@ -213,7 +248,7 @@ def getAddr():
     global asm
 
     for i, l in enumerate(asm):
-        if l[0] == ".": 
+        if l[0] == ".":
             return i
     
     return None
@@ -250,6 +285,7 @@ file = sys.argv[1]
 df = pd.read_csv("compiler/symtab.csv")
 df["Scope Memloc"] = df.apply(getMemLoc, axis=1)
 df.sort_values(by='Memloc')
+df.to_csv("compiler/symtab.csv")
 
 reg = [None]*29
 reg[0] = "$t0"

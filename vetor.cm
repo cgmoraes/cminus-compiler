@@ -1,0 +1,11 @@
+void baba(int v[])
+{
+    int x;
+    x = v[1];
+}
+
+void main(void){
+    int v[10];
+    v[1] = 2;
+    baba(v);
+}
