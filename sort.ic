@@ -1,0 +1,130 @@
+AARR vet(10) global
+FUN int minloc
+ARG int a
+ARG int low
+ARG int high
+ALLOC i minloc
+ALLOC x minloc
+ALLOC k minloc
+LOAD $t1 low
+STORE $t1 k
+LOAD $t2 low
+LOAD $t3 a($t2)
+STORE $t3 x
+LOAD $t4 low
+ADDI $t5 $t0 1
+MAIS $t6 $t4 $t5
+STORE $t6 i
+LAB L0
+LOAD $t7 i
+LOAD $t8 high
+MENORQ $t9 $t7 $t8
+IFF $t9 L1
+LOAD $t10 i
+LOAD $t11 a($t10)
+LOAD $t12 x
+MENORQ $t13 $t11 $t12
+IFF $t13 L2
+LOAD $t14 i
+LOAD $t15 a($t14)
+STORE $t15 x
+LOAD $t16 i
+STORE $t16 k
+GOTO L3
+LAB L2
+LAB L3
+LOAD $t17 i
+ADDI $t18 $t0 1
+MAIS $t19 $t17 $t18
+STORE $t19 i
+GOTO L0
+LAB L1
+LOAD $t20 k
+RET $t20
+END minloc
+FUN void sort
+ARG int a
+ARG int low
+ARG int high
+ALLOC i sort
+ALLOC k sort
+LOAD $t21 low
+STORE $t21 i
+LAB L4
+LOAD $t22 high
+ADDI $t23 $t0 1
+MENOS $t24 $t22 $t23
+LOAD $t25 i
+MENORQ $t26 $t25 $t24
+IFF $t26 L5
+ALLOC t sort
+LOAD $t27 a
+PARAM $t27 a
+LOAD $t29 i
+PARAM $t29 i
+LOAD $t30 high
+PARAM $t30 high
+CALL $t28 minloc 3
+MAIS $t31 $t0 $t28
+STORE $t31 k
+LOAD $t32 k
+LOAD $t33 a($t32)
+STORE $t33 t
+LOAD $t34 i
+LOAD $t35 a($t34)
+LOAD $t36 k
+STORE $t35 a($t36)
+LOAD $t37 t
+LOAD $t38 i
+STORE $t37 a($t38)
+LOAD $t39 i
+ADDI $t40 $t0 1
+MAIS $t41 $t39 $t40
+STORE $t41 i
+GOTO L4
+LAB L5
+END sort
+FUN void main
+ALLOC i main
+ADDI $t42 $t0 0
+STORE $t42 i
+LAB L6
+LOAD $t43 i
+ADDI $t44 $t0 10
+MENORQ $t45 $t43 $t44
+IFF $t45 L7
+INPUT $t28
+LOAD $t46 i
+STORE $t28 vet($t46)
+LOAD $t47 i
+ADDI $t48 $t0 1
+MAIS $t49 $t47 $t48
+STORE $t49 i
+GOTO L6
+LAB L7
+LOAD $t50 vet
+PARAM $t50 vet
+ADDI $t51 $t0 0
+PARAM $t51
+ADDI $t52 $t0 10
+PARAM $t52
+CALL $t28 sort 3
+MAIS $t53 $t0 $t28
+ADDI $t54 $t0 0
+STORE $t54 i
+LAB L8
+LOAD $t55 i
+ADDI $t56 $t0 10
+MENORQ $t57 $t55 $t56
+IFF $t57 L9
+LOAD $t58 i
+LOAD $t59 vet($t58)
+OUTPUT $t59
+LOAD $t60 i
+ADDI $t61 $t0 1
+MAIS $t62 $t60 $t61
+STORE $t62 i
+GOTO L8
+LAB L9
+END main
+HALT

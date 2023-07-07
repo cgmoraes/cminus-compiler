@@ -1,11 +1,10 @@
-void baba(int v[])
+void baba(int vet[])
 {
-    int x;
-    x = v[1];
+    output(vet[1]);
 }
 
 void main(void){
     int v[10];
-    v[1] = 2;
+    v[1] = 24;
     baba(v);
 }

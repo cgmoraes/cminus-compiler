@@ -205,8 +205,15 @@ static void genStmt( TreeNode * tree)
           p1 = tree->child[0];
           if (p1 != NULL){
             for(i=0;p1 != NULL;i++){
-              if (p1->kind.exp == ConstK) fprintf(code, "ADDI $t%d $t0 %d\n", getTempReg(), p1->attr.val);
-              else {
+              if (p1->kind.exp == ConstK) {
+                fprintf(code, "ADDI $t%d $t0 %d\n", getTempReg(), p1->attr.val);
+                r1 = indexR;
+                fprintf(code, "PARAM $t%d\n", r1);
+              } else if(p1->kind.exp == IdK){
+                genExp(p1);
+                r1 = indexR;
+                fprintf(code, "PARAM $t%d %s\n", r1, p1->attr.name);
+              } else {
                 switch (p1->nodekind) {
                   case StmtK:
                     genStmt(p1);
@@ -216,10 +223,10 @@ static void genStmt( TreeNode * tree)
                     break;
                   default:
                     break;
+                  r1 = indexR;
+                  fprintf(code, "PARAM $t%d\n", r1);
                 }
               }
-              r1 = indexR;
-              fprintf(code, "PARAM $t%d\n", r1);
               p1 = p1->sibling;
             } 
           }
