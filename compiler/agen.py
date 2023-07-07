@@ -95,6 +95,7 @@ def genAsm(file):
 
                     case "PARAM":
                         params_reg.insert(0, f"{reg.index(quad[1])}")
+                        
                         if len(quad) > 2:
                             # print(scope, quad, df.loc[((df['Scope'] == 'global') & (df['Variable Name'] == quad[2])), 'Length'].values[0])
                             if df.loc[df['Scope'] == scope, 'Variable Name'].isin([quad[2]]).any() and df.loc[((df['Scope'] == scope) & (df['Variable Name'] == quad[2])), 'Length'].values[0] > 0:

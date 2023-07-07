@@ -223,9 +223,9 @@ static void genStmt( TreeNode * tree)
                     break;
                   default:
                     break;
-                  r1 = indexR;
-                  fprintf(code, "PARAM $t%d\n", r1);
                 }
+                r1 = indexR;
+                fprintf(code, "PARAM $t%d\n", r1);
               }
               p1 = p1->sibling;
             } 
