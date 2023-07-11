@@ -20,5 +20,14 @@ cd compiler
 make
 cd ..
 ./compiler/cmc "$arquivo" -o "$arquivo"
+
+if ! ls *.ic 1> /dev/null 2>&1; then
+  echo "Erro de compilação."
+  exit 1
+fi
+
 python3 compiler/agen.py "$arquivo"
+
+rm compiler/symtab.csv
+
 python3 compiler/bgen.py "$arquivo"
