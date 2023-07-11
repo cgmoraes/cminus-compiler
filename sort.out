@@ -1,0 +1,428 @@
+
+CMINUS COMPILATION: sort.cm
+	4: int
+	4: ID, name= vet
+	4: [
+	4: NUM, val= 10
+	4: ]
+	4: ;
+	6: int
+	6: ID, name= minloc
+	6: (
+	6: int
+	6: ID, name= a
+	6: [
+	6: ]
+	6: ,
+	6: int
+	6: ID, name= low
+	6: ,
+	6: int
+	6: ID, name= high
+	6: )
+	7: {
+	7: int
+	7: ID, name= i
+	7: ;
+	7: int
+	7: ID, name= x
+	7: ;
+	7: int
+	7: ID, name= k
+	7: ;
+	8: ID, name= k
+	8: =
+	8: ID, name= low
+	8: ;
+	9: ID, name= x
+	9: =
+	9: ID, name= a
+	9: [
+	9: ID, name= low
+	9: ]
+	9: ;
+	10: ID, name= i
+	10: =
+	10: ID, name= low
+	10: +
+	10: NUM, val= 1
+	10: ;
+	11: while
+	11: (
+	11: ID, name= i
+	11: <
+	11: ID, name= high
+	11: )
+	11: {
+	12: if
+	12: (
+	12: ID, name= a
+	12: [
+	12: ID, name= i
+	12: ]
+	12: <
+	12: ID, name= x
+	12: )
+	12: {
+	13: ID, name= x
+	13: =
+	13: ID, name= a
+	13: [
+	13: ID, name= i
+	13: ]
+	13: ;
+	14: ID, name= k
+	14: =
+	14: ID, name= i
+	14: ;
+	15: }
+	16: ID, name= i
+	16: =
+	16: ID, name= i
+	16: +
+	16: NUM, val= 1
+	16: ;
+	17: }
+	18: return
+	18: ID, name= k
+	18: ;
+	19: }
+	21: void
+	21: ID, name= sort
+	21: (
+	21: int
+	21: ID, name= a
+	21: [
+	21: ]
+	21: ,
+	21: int
+	21: ID, name= low
+	21: ,
+	21: int
+	21: ID, name= high
+	21: )
+	22: {
+	22: int
+	22: ID, name= i
+	22: ;
+	22: int
+	22: ID, name= k
+	22: ;
+	23: ID, name= i
+	23: =
+	23: ID, name= low
+	23: ;
+	24: while
+	24: (
+	24: ID, name= i
+	24: <
+	24: ID, name= high
+	24: -
+	24: NUM, val= 1
+	24: )
+	24: {
+	25: int
+	25: ID, name= t
+	25: ;
+	26: ID, name= k
+	26: =
+	26: ID, name= minloc
+	26: (
+	26: ID, name= a
+	26: ,
+	26: ID, name= i
+	26: ,
+	26: ID, name= high
+	26: )
+	26: ;
+	27: ID, name= t
+	27: =
+	27: ID, name= a
+	27: [
+	27: ID, name= k
+	27: ]
+	27: ;
+	28: ID, name= a
+	28: [
+	28: ID, name= k
+	28: ]
+	28: =
+	28: ID, name= a
+	28: [
+	28: ID, name= i
+	28: ]
+	28: ;
+	29: ID, name= a
+	29: [
+	29: ID, name= i
+	29: ]
+	29: =
+	29: ID, name= t
+	29: ;
+	30: ID, name= i
+	30: =
+	30: ID, name= i
+	30: +
+	30: NUM, val= 1
+	30: ;
+	31: }
+	32: }
+	34: void
+	34: ID, name= main
+	34: (
+	34: void
+	34: )
+	35: {
+	36: int
+	36: ID, name= i
+	36: ;
+	37: ID, name= i
+	37: =
+	37: NUM, val= 0
+	37: ;
+	38: while
+	38: (
+	38: ID, name= i
+	38: <
+	38: NUM, val= 10
+	38: )
+	38: {
+	39: ID, name= vet
+	39: [
+	39: ID, name= i
+	39: ]
+	39: =
+	39: input
+	39: (
+	39: )
+	39: ;
+	40: ID, name= i
+	40: =
+	40: ID, name= i
+	40: +
+	40: NUM, val= 1
+	40: ;
+	41: }
+	42: ID, name= sort
+	42: (
+	42: ID, name= vet
+	42: ,
+	42: NUM, val= 0
+	42: ,
+	42: NUM, val= 10
+	42: )
+	42: ;
+	43: ID, name= i
+	43: =
+	43: NUM, val= 0
+	43: ;
+	44: while
+	44: (
+	44: ID, name= i
+	44: <
+	44: NUM, val= 10
+	44: )
+	44: {
+	45: output
+	45: (
+	45: ID, name= vet
+	45: [
+	45: ID, name= i
+	45: ]
+	45: )
+	45: ;
+	46: ID, name= i
+	46: =
+	46: ID, name= i
+	46: +
+	46: NUM, val= 1
+	46: ;
+	47: }
+	48: }
+	48: FIMARQV
+
+Syntax tree:
+  Type: int
+    Var: vet
+  Type: int
+    Fun: minloc
+      Type: int
+        Var: a
+      Type: int
+        Var: low
+      Type: int
+        Var: high
+      Type: int
+        Var: i
+      Type: int
+        Var: x
+      Type: int
+        Var: k
+      Assign to: k
+        Id: k
+        Id: low
+      Assign to: x
+        Id: x
+        Vet: a
+          Id: low
+      Assign to: i
+        Id: i
+        Op: +
+          Id: low
+          Const: 1
+      While
+        Op: <
+          Id: i
+          Id: high
+        If
+          Op: <
+            Vet: a
+              Id: i
+            Id: x
+          Assign to: x
+            Id: x
+            Vet: a
+              Id: i
+          Assign to: k
+            Id: k
+            Id: i
+        Assign to: i
+          Id: i
+          Op: +
+            Id: i
+            Const: 1
+      Return
+        Id: k
+  Type: void
+    Fun: sort
+      Type: int
+        Var: a
+      Type: int
+        Var: low
+      Type: int
+        Var: high
+      Type: int
+        Var: i
+      Type: int
+        Var: k
+      Assign to: i
+        Id: i
+        Id: low
+      While
+        Op: <
+          Id: i
+          Op: -
+            Id: high
+            Const: 1
+        Type: int
+          Var: t
+        Assign to: k
+          Id: k
+          Call: minloc
+            Id: a
+            Id: i
+            Id: high
+        Assign to: t
+          Id: t
+          Vet: a
+            Id: k
+        Assign to: a
+          Vet: a
+            Id: k
+          Vet: a
+            Id: i
+        Assign to: a
+          Vet: a
+            Id: i
+          Id: t
+        Assign to: i
+          Id: i
+          Op: +
+            Id: i
+            Const: 1
+  Type: void
+    Fun: main
+      Type: void
+      Type: int
+        Var: i
+      Assign to: i
+        Id: i
+        Const: 0
+      While
+        Op: <
+          Id: i
+          Const: 10
+        Assign to: vet
+          Vet: vet
+            Id: i
+          Input
+        Assign to: i
+          Id: i
+          Op: +
+            Id: i
+            Const: 1
+      Call: sort
+        Id: vet
+        Const: 0
+        Const: 10
+      Assign to: i
+        Id: i
+        Const: 0
+      While
+        Op: <
+          Id: i
+          Const: 10
+        Output
+          Vet: vet
+            Id: i
+        Assign to: i
+          Id: i
+          Op: +
+            Id: i
+            Const: 1
+
+Building Symbol Table...
+
+Checking Types...
+
+Type Checking Finished.
+
+Symbol table:
+
+-----------------------------------------------------------
+Scope    global
+-----------------------------------------------------------
+Type     Variable Name  Memloc  Line Numbers
+-----------------------------------------------------------
+void     main           24      34 
+void     sort           17      21 42 
+int      vet            0        4 39 42 45 
+int      minloc         10       6 26 
+-----------------------------------------------------------
+Scope    minloc
+-----------------------------------------------------------
+Type     Variable Name  Memloc  Line Numbers
+-----------------------------------------------------------
+int      low            12       6  8  9 10 
+int      a              11       6  9 12 13 
+int      i              14       7 10 11 12 13 14 16 16 
+int      k              16       7  8 14 18 
+int      x              15       7  9 12 13 
+int      high           13       6 11 
+-----------------------------------------------------------
+Scope    sort
+-----------------------------------------------------------
+Type     Variable Name  Memloc  Line Numbers
+-----------------------------------------------------------
+int      low            19      21 23 
+int      a              18      21 26 27 28 28 29 
+int      i              21      22 23 24 26 28 29 30 30 
+int      k              22      22 26 27 28 
+int      t              23      25 27 29 
+int      high           20      21 24 26 
+-----------------------------------------------------------
+Scope    main
+-----------------------------------------------------------
+Type     Variable Name  Memloc  Line Numbers
+-----------------------------------------------------------
+int      i              25      36 37 38 39 40 40 43 44 45 46 46 
