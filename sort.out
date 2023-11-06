@@ -394,10 +394,13 @@ Scope    global
 -----------------------------------------------------------
 Type     Variable Name  Memloc  Line Numbers
 -----------------------------------------------------------
+int      Get_Address    0        0 
+int      Call_Process   0        0 
 void     main           24      34 
 void     sort           17      21 42 
 int      vet            0        4 39 42 45 
 int      minloc         10       6 26 
+void     Set_Quantum    0        0 
 -----------------------------------------------------------
 Scope    minloc
 -----------------------------------------------------------

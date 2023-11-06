@@ -186,6 +186,9 @@ void checkMain(TreeNode * t){
  */
 void buildSymtab(TreeNode * syntaxTree)
 { st_insert_scope("global");
+  st_insert(NULL, "global", "Call_Process", "int", 0, 0, 0);
+  st_insert(NULL, "global", "Set_Quantum", "void", 0, 0, 0);
+  st_insert(NULL, "global", "Get_Address", "int", 0, 0, 0);
   traverse(syntaxTree, insertNode, nullProc);
 }
 

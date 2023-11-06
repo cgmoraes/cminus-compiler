@@ -1,0 +1,70 @@
+AARR vet(2) global
+FUN void main
+ALLOC addr main
+ALLOC i main
+ADDI $t1 $t0 0
+STORE $t1 i
+ADDI $t2 $t0 180
+STORE $t2 addr
+ADDI $t3 $t0 180
+ADDI $t4 $t0 0
+STORE $t3 vet($t4)
+ADDI $t5 $t0 180
+ADDI $t6 $t0 2
+VEZES $t7 $t5 $t6
+ADDI $t8 $t0 1
+STORE $t7 vet($t8)
+ADDI $t9 $t0 5
+PARAM $t9
+CALL $t28 Set_Quantum 1
+LAB L0
+ADDI $t10 $t0 1
+LOAD $t11 vet($t10)
+ADDI $t12 $t0 0
+MAIORQ $t13 $t11 $t12
+IFF $t13 L1
+LOAD $t14 i
+LOAD $t15 vet($t14)
+PARAM $t15
+LOAD $t16 i
+ADDI $t17 $t0 1
+MAIS $t18 $t16 $t17
+ADDI $t19 $t0 180
+VEZES $t20 $t19 $t18
+PARAM $t20
+CALL $t28 Call_Process 2
+MAIS $t21 $t0 $t28
+LOAD $t22 i
+STORE $t21 vet($t22)
+LOAD $t23 i
+ADDI $t24 $t0 0
+IGUAL $t25 $t23 $t24
+IFF $t25 L2
+ADDI $t26 $t0 1
+STORE $t26 i
+GOTO L3
+LAB L2
+ADDI $t27 $t0 0
+STORE $t27 i
+LAB L3
+GOTO L0
+LAB L1
+LAB L4
+ADDI $t29 $t0 0
+LOAD $t30 vet($t29)
+ADDI $t31 $t0 0
+MAIORQ $t32 $t30 $t31
+IFF $t32 L5
+ADDI $t33 $t0 0
+LOAD $t34 vet($t33)
+PARAM $t34
+ADDI $t35 $t0 180
+PARAM $t35
+CALL $t28 Call_Process 2
+MAIS $t36 $t0 $t28
+ADDI $t37 $t0 0
+STORE $t36 vet($t37)
+GOTO L4
+LAB L5
+END main
+HALT

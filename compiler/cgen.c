@@ -203,8 +203,11 @@ static void genStmt( TreeNode * tree)
         {
           int i = 0;
           p1 = tree->child[0];
+
           if (p1 != NULL){
+
             for(i=0;p1 != NULL;i++){
+
               if (p1->kind.exp == ConstK) {
                 fprintf(code, "ADDI $t%d $t0 %d\n", getTempReg(), p1->attr.val);
                 r1 = indexR;
@@ -227,9 +230,19 @@ static void genStmt( TreeNode * tree)
                 r1 = indexR;
                 fprintf(code, "PARAM $t%d\n", r1);
               }
+
               p1 = p1->sibling;
+
             } 
           }
+
+
+          // if(!strcmp(tree->attr.name,"Call_Process")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          if(!strcmp(tree->attr.name,"Set_Quantum")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          // else if(!strcmp(tree->attr.name,"Get_Address")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          // else if(!strcmp(tree->attr.name,"Reg_To_Ram")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          // else if(!strcmp(tree->attr.name,"Ram_To_Reg")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+
           fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i);
           r28 = indexR;
           indexR = 28;
@@ -255,15 +268,15 @@ static void genStmt( TreeNode * tree)
 
       case OutK:
         {
-          if ((tree->child[0]->kind.exp == ConstK)){
-            fprintf(code, "OUTPUT");
-            cGen(tree->child[0]);
-            fprintf(code, "\n");
-          } else {
+          // if ((tree->child[0]->kind.exp == ConstK)){
+          //   fprintf(code, "OUTPUT");
+          //   cGen(tree->child[0]);
+          //   fprintf(code, "\n");
+          // } else {
             cGen(tree->child[0]);
             r1 = indexR;
             fprintf(code, "OUTPUT $t%d\n", r1);
-          }
+          // }
           break;
         }
 

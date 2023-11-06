@@ -1,0 +1,63 @@
+J 44
+SW $r29 $r31 1
+ADDI $r30 $r30 1
+ADDI $r30 $r30 1
+ADDI $r30 $r30 1
+ADDI $r30 $r30 1
+ADDI $r30 $r30 1
+ADDI $r30 $r30 1
+ADDI $t16 $t17 0
+SW $r29 $t17 3
+ADDI $t16 $t17 1
+SW $r29 $t17 4
+ADDI $t16 $t17 2
+SW $r29 $t17 6
+LW $r29 $t17 2
+ADDI $t16 $t18 0
+SET $t17 $t18 $t19
+BEQ $t16 $t19 4
+LW $r29 $t17 3
+ADDI $t17 $t28 0
+J 42
+J 22
+LW $r29 $t17 6
+LW $r29 $t18 2
+SLET $t17 $t18 $t19
+BEQ $t16 $t19 13
+LW $r29 $t17 3
+LW $r29 $t18 4
+ADD $t17 $t18 $t19
+SW $r29 $t19 5
+LW $r29 $t17 4
+SW $r29 $t17 3
+LW $r29 $t17 5
+SW $r29 $t17 4
+LW $r29 $t17 6
+ADDI $t16 $t18 1
+ADD $t17 $t18 $t19
+SW $r29 $t19 6
+J 22
+LW $r29 $t17 4
+ADDI $t17 $t28 0
+J 42
+LW $r29 $r31 1
+JR $r31
+ADDI $r30 $r29 0
+ADDI $r30 $r30 1
+IN $t28
+SW $r29 $t28 0
+LW $r29 $t17 0
+SW $r30 $t17 0
+ADDI $r30 $r30 1
+SW $r30 $r29 0
+ADDI $r30 $r29 0
+ADDI $r30 $r30 1
+SW $r29 $t17 2
+JAL 1
+ADDI $r29 $r30 0
+LW $r29 $r29 0
+SUBI $r30 $r30 1
+LW $r30 $t17 0
+ADD $t16 $t28 $t17
+OUT $t17
+HALT

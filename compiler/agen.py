@@ -11,7 +11,7 @@ def updateMemLoc(row):
         return row["Memloc"] - df.loc[df["Variable Name"] == row["Scope"],"Memloc"].values[0] + 1
     
 def deallocateReg(f):
-    global reg, params_reg
+    global reg, range_reg, params_reg
 
     index = set()
 
@@ -21,11 +21,12 @@ def deallocateReg(f):
     pos = f.tell()
     while (nextLine := f.readline().strip()) != "":
         if "$t" in nextLine: 
-            for i, r in enumerate(reg):
-                if i == 0 or i == 28: continue
+            for i, r in enumerate(reg[range_reg[0]:range_reg[1]]):
+                i += range_reg[0]
+                if i == range_reg[0] or i == range_reg[1]-4: continue
                 if r is not None and re.search(r"{}(?![0-9])".format(re.escape(r)), nextLine) and i not in index: index.add(i)
 
-    for i in range(1,28):
+    for i in range(range_reg[0]+1,range_reg[1]-4):
         if i not in index: reg[i] = None
 
     f.seek(pos)
@@ -41,7 +42,7 @@ def getLen(scope, var):
     return df.loc[((df['Scope'] == scope) & (df['Variable Name'] == var)), 'Length'].values[0]
 
 def genAsm(file):
-    global reg, params_reg, numregs
+    global reg, range_reg, params_reg, numregs
 
     scope = 'global'
     params = {}
@@ -57,7 +58,8 @@ def genAsm(file):
                 for i in quad:
                     if "$t" in i: 
                         aux = i.split("(")[1][:-1] if "(" in i else i
-                        if not aux in reg: reg[reg.index(None)]=aux
+                        if not aux in reg[range_reg[0]:range_reg[1]]: reg[reg[range_reg[0]:range_reg[1]].index(None)+range_reg[0]]=aux
+                
 
                 match quad[0]:
                     case "INPUT":
@@ -83,63 +85,84 @@ def genAsm(file):
                         asm.write(f".{quad[2]}\n")
 
                         if quad[2] != "main":
-                            asm.write("SW $r29 $r31 1\n")
-                            asm.write("ADDI $r30 $r30 1\n")
+                            asm.write(f"SW $r{range_reg[1]-3} $r{range_reg[1]-1} 1\n")
+                            asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-2} 1\n")
                         else:
-                            asm.write("ADDI $r30 $r29 0\n")
+                            asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-3} 0\n")
 
                     case "RET":
-                        asm.write(f"ADDI $t{reg.index(quad[1])} $t28 0\n")
+                        asm.write(f"ADDI $t{reg.index(quad[1])} $t{range_reg[1]-4} 0\n")
                         asm.write(f"J {scope}:END\n")
                         
 
                     case "ALLOC":
-                        asm.write("ADDI $r30 $r30 1\n")
+                        asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-2} 1\n")
 
                     case "AARR":
                         size = int(quad[1].split("(")[1][:-1])
-                        asm.write(f"ADDI $r30 $r30 {size}\n")
+                        asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-2} {size}\n")
 
                     case "ARG":
-                        asm.write("ADDI $r30 $r30 1\n")
+                        asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-2} 1\n")
 
                     case "PARAM":
                         params_reg.insert(0, f"{reg.index(quad[1])}")
                         
                         if len(quad) > 2:
                             if checkOcc(scope, quad[2]) and getLen(scope, quad[2]) > 0:
-                                asm.write(f"ADDI $r29 $t{reg.index(quad[1])} {getMemLoc(scope, quad[2])}\n")
+                                asm.write(f"ADDI $r{range_reg[1]-3} $t{reg.index(quad[1])} {getMemLoc(scope, quad[2])}\n")
                             elif checkOcc('global', quad[2]) and getLen('global', quad[2]) > 0:
-                                asm.write(f"ADDI $t0 $t{reg.index(quad[1])} {getMemLoc('global', quad[2])}\n")
+                                asm.write(f"ADDI $t{range_reg[0]} $t{reg.index(quad[1])} {getMemLoc('global', quad[2])}\n")
 
                     case "CALL":
+                        match quad[2]:
+                            case "Call_Process":
+                                for i in range(16):
+                                    asm.write(f"LW $t{params_reg[0]} $t{i+16} {i}\n")
+                                asm.write(f"CALLPROCESS $t{params_reg[1]} $t{params_reg[0]}\n")
+                                for i in range(16):
+                                    asm.write(f"SW $t{params_reg[0]} $t{i+16} {i}\n")
+                                asm.write(f"GETADDR $t{range_reg[1]-4}\n")
+                                params_reg.pop(0)
+                                params_reg.pop(0)
+                            case "Set_Quantum":
+                                asm.write(f"SETQUANTUM $t{params_reg[0]}\n")
+                                params_reg.pop(0)
+                            case "Get_Address":
+                                pass
+                            case "Reg_To_Ram":
+                                pass
+                                #params_reg.pop(0)
+                            case "Ram_To_Reg":
+                                pass
+                                #params_reg.pop(0)
+                            case _:
+                                ## Empilha
+                                for i, r in enumerate(reg[range_reg[0]:range_reg[1]].copy()):
+                                    i += range_reg[0]
+                                    if i > range_reg[0] and i < range_reg[1]-4 and r is not None:
+                                        asm.write(f"SW $r{range_reg[1]-2} $t{i} 0\n")
+                                        asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-2} 1\n")
 
-                        ## Empilha
-                        for i, r in enumerate(reg.copy()):
-                            if i > 0 and i < 28 and r is not None:
-                                asm.write(f"SW $r30 $t{i} 0\n")
-                                asm.write("ADDI $r30 $r30 1\n")
+                                ## Call
+                                asm.write(f"SW $r{range_reg[1]-2} $r{range_reg[1]-3} 0\n")
+                                asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-3} 0\n")
+                                asm.write(f"ADDI $r{range_reg[1]-2} $r{range_reg[1]-2} 1\n")
 
-                        ## Call
-                        asm.write("SW $r30 $r29 0\n")
-                        asm.write("ADDI $r30 $r29 0\n")
-                        asm.write("ADDI $r30 $r30 1\n")
+                                for i, r in enumerate(params_reg):
+                                    asm.write(f"SW $r{range_reg[1]-3} $t{r} {getMemLoc(quad[2], params[quad[2]][i])}\n")
+                                
+                                params_reg = []
+                                asm.write(f"JAL {quad[2]}\n")
+                                asm.write(f"ADDI $r{range_reg[1]-3} $r{range_reg[1]-2} 0\n")
+                                asm.write(f"LW $r{range_reg[1]-3} $r{range_reg[1]-3} 0\n")
 
-                        for i, r in enumerate(params_reg):
-                            asm.write(f"SW $r29 $t{r} {getMemLoc(quad[2], params[quad[2]][i])}\n")
-                        
-                        params_reg = []
-                        asm.write(f"JAL {quad[2]}\n")
-                        asm.write("ADDI $r29 $r30 0\n")
-                        asm.write("LW $r29 $r29 0\n")
-
-                        ## Desempilha
-                        for i, r in enumerate(reversed(reg.copy())):
-                            index = len(reg) - 1 - i
-                            if index > 0 and index < 28 and r is not None:
-                                asm.write("SUBI $r30 $r30 1\n")
-                                asm.write(f"LW $r30 $t{index} 0\n")
-
+                                ## Desempilha
+                                for i, r in enumerate(reversed(reg[range_reg[0]:range_reg[1]].copy())):
+                                    index = range_reg[0] + len(reg[range_reg[0]:range_reg[1]]) - 1 - i
+                                    if index > range_reg[0] and index < range_reg[1]-4 and r is not None:
+                                        asm.write(f"SUBI $r{range_reg[1]-2} $r{range_reg[1]-2} 1\n")
+                                        asm.write(f"LW $r{range_reg[1]-2} $t{index} 0\n")
 
                     case "LOAD":
                         scopevar = scope
@@ -154,20 +177,20 @@ def genAsm(file):
                                 asm.write(f"LW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
 
                             elif var in params[scopevar] and getLen(scopevar, var) == -1:
-                                asm.write(f"LW $r29 $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
+                                asm.write(f"LW $r{range_reg[1]-3} $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
                                 asm.write(f"ADD $t{reg.index(quad[1])} $t{reg.index(regoff)} $t{reg.index(quad[1])}\n")
                                 asm.write(f"LW $t{reg.index(quad[1])} $t{reg.index(quad[1])} 0\n")
                             
                             else:
                                 asm.write(f"ADDI $t{reg.index(regoff)} $t{reg.index(regoff)} {getMemLoc(scopevar, var)}\n")
-                                asm.write(f"ADD $r29 $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"ADD $r{range_reg[1]-3} $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
                                 asm.write(f"LW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
                         
                         else:
                             if "global" in scopevar: 
-                                asm.write(f"LW $t0 $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
+                                asm.write(f"LW $t{range_reg[0]} $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
                             else: 
-                                asm.write(f"LW $r29 $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
+                                asm.write(f"LW $r{range_reg[1]-3} $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
 
 
                     case "STORE":
@@ -184,26 +207,26 @@ def genAsm(file):
                                 asm.write(f"SW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
 
                             elif var in params[scopevar] and getLen(scopevar, var) == -1:
-                                asm.write(f"LW $r29 $t{reg.index(None)} {getMemLoc(scopevar, var)}\n")
-                                asm.write(f"ADD $t{reg.index(None)} $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"LW $r{range_reg[1]-3} $t{reg[range_reg[0]:range_reg[1]].index(None)+range_reg[0]} {getMemLoc(scopevar, var)}\n")
+                                asm.write(f"ADD $t{reg[range_reg[0]:range_reg[1]].index(None)+range_reg[0]} $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
                                 asm.write(f"SW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
 
                             else:
                                 asm.write(f"ADDI $t{reg.index(regoff)} $t{reg.index(regoff)} {getMemLoc(scopevar, var)}\n")
-                                asm.write(f"ADD $r29 $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
+                                asm.write(f"ADD $r{range_reg[1]-3} $t{reg.index(regoff)} $t{reg.index(regoff)}\n")
                                 asm.write(f"SW $t{reg.index(regoff)} $t{reg.index(quad[1])} 0\n")
                         
                         else:
                             if "global" in scopevar: 
-                                asm.write(f"SW $t0 $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
+                                asm.write(f"SW $t{range_reg[0]} $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
                             else: 
-                                asm.write(f"SW $r29 $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
+                                asm.write(f"SW $r{range_reg[1]-3} $t{reg.index(quad[1])} {getMemLoc(scopevar, var)}\n")
 
                     case "LAB":
                         asm.write(f".{quad[1]}\n")
 
                     case "MAIS":
-                        if "$r29" in quad[2]: asm.write(f"ADD $r29 $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
+                        if f"$r{range_reg[1]-3}" in quad[2]: asm.write(f"ADD $r{range_reg[1]-3} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                         else: asm.write(f"ADD $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "ADDI":
@@ -242,7 +265,7 @@ def genAsm(file):
                         asm.write(f"SDT $t{reg.index(quad[2])} $t{reg.index(quad[3])} $t{reg.index(quad[1])}\n")
                     
                     case "IFF":
-                        asm.write(f"BEQ $t0 $t{reg.index(quad[1])} {quad[2]}\n")
+                        asm.write(f"BEQ $t{range_reg[0]} $t{reg.index(quad[1])} {quad[2]}\n")
 
                     case "GOTO":
                         asm.write(f"J {quad[1]}\n")
@@ -250,8 +273,8 @@ def genAsm(file):
                     case "END":
                         if quad[1] != "main":
                             asm.write(f".{quad[1]}:END\n")
-                            asm.write("LW $r29 $r31 1\n")
-                            asm.write("JR $r31\n")
+                            asm.write(f"LW $r{range_reg[1]-3} $r{range_reg[1]-1} 1\n")
+                            asm.write(f"JR $r{range_reg[1]-1}\n")
 
                     case "HALT":
                         asm.write("HALT\n")
@@ -297,14 +320,19 @@ def genLabels(file):
             beq = False
             f.write(asm[i])
 
-file = sys.argv[1]
+process_type = sys.argv[1]
+file = sys.argv[2]
 df = pd.read_csv("compiler/symtab.csv")
 df["Scope Memloc"] = df.apply(updateMemLoc, axis=1)
 df.sort_values(by='Memloc')
 
-reg = [None]*29
-reg[0] = "$t0"
-reg[28] = "$t28"
+reg = [None]*32
+range_reg = [0,16] if int(process_type) else [16,32]
+reg[range_reg[0]] = f"$t0"
+reg[range_reg[1]-1] = f"$r{range_reg[1]-1}"
+reg[range_reg[1]-2] = f"$r{range_reg[1]-2}"
+reg[range_reg[1]-3] = f"$r{range_reg[1]-3}"
+reg[range_reg[1]-4] = f"$t28"
 params_reg = []
 asm = []
 

@@ -1,9 +1,11 @@
 import sys
 
-file = sys.argv[1]
-numregs = 29
-regs = {f"$t{i}": format(i, "05b") for i in range(numregs)}
-regs.update({f"$r{i}": format(i, "05b") for i in range(numregs, 32)})
+process_type = int(sys.argv[1])
+file = sys.argv[2]
+lines = int(sys.argv[3])
+range_reg = [0,16] if process_type else [16,32]
+regs = {f"$t{i}": format(i, "05b") for i in range(32)}
+regs.update({f"$r{i}": format(i, "05b") for i in range(range_reg[1]-3, range_reg[1])})
 
 op = {
         "R": {
@@ -38,14 +40,17 @@ op = {
                 "JAL": "000011",
                 "JR": "000001"
             },
-        "HALT": "111111",
+        "HALT": ["111101","111111"],
         "IN": "100001",
-        "OUT": "110001"
+        "OUT": "110001",
+        "CALLPROCESS": "101001",
+        "SETQUANTUM": "101111",
+        "GETADDR": "100111"
     }
 
 with open(f"{file}.bin", "w") as b:
     with open(f"{file}.asm", "r") as asm:
-        for line in asm:
+        for num_line, line in enumerate(asm):
             line = line.strip()
             quad = line.split(' ')
             if quad[0] in op["R"].keys():
@@ -58,7 +63,14 @@ with open(f"{file}.bin", "w") as b:
                 else:
                     b.write(f"{op['J'][quad[0]]}{format(int(quad[1]),'026b')}\n")
             else:
-                if "IN" in quad[0]: b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
-                elif "OUT" in quad[0]: b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
-                elif "HALT" in quad[0]: b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
-                else: b.write(f"{quad[0]}\n")
+                match quad[0]:
+                    case "IN": b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
+                    case "OUT": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
+                    case "HALT": b.write(f"{op[quad[0]][process_type]}{format(0,'026b')}\n")
+                    case "CALLPROCESS": b.write(f"{op[quad[0]]}{regs[quad[1]]}{regs[quad[2]]}{format(0,'016b')}\n")
+                    case "SETQUANTUM": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
+                    case "GETADDR": b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
+                    case _: b.write(f"{quad[0]}\n")
+
+    for i in range(num_line+1, lines):
+        b.write(f"{format(0,'032b')}\n")
