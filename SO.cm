@@ -1,0 +1,126 @@
+int processes[10];
+int proc_exec[10];
+int indexes[10];
+int quantum_processes[10];
+
+int addr;
+int qnty;
+
+void init(void){
+    int i;
+    i = 0;
+
+    addr = 400;
+    qnty = 0;
+
+    while(i < 10){
+        processes[i] = 0;
+        indexes[i] = i+1;
+        quantum_processes[i] = 9999;
+        i = i + 1;
+    }
+}
+
+int menu(void){
+    int in;
+
+    Set_LCD(10);
+    in = input();
+
+    return in;
+}
+
+int check_processes(void){
+    int i;
+    int j;
+
+    i = 0;
+    while(i < qnty){
+        j = proc_exec[i]-1;
+        if(processes[j] > 0){
+            return 1;
+        } 
+
+        i = i + 1;
+    }
+
+    return 0;
+}
+
+void exec_processes(void){
+    int i; 
+    int j; 
+    int in; 
+
+    Set_LCD(11);
+    qnty = input();
+
+    i = 0;
+    while(i < qnty){
+        Set_LCD(i+21);
+        j = input();
+        proc_exec[i] = indexes[j-1];
+
+        processes[proc_exec[i]-1] = addr*proc_exec[i];
+        i = i + 1;
+    }
+
+    i = 0;
+    while(i < qnty){
+        Set_LCD(i+31);
+        in = input();
+
+        if(in == 1){quantum_processes[proc_exec[i]-1] = 15;}
+        i = i + 1;
+    }
+
+    i = 0;
+    while(check_processes()){
+        while(i < qnty){
+            Set_LCD(i+1);
+            if(processes[proc_exec[i]-1] > 0){
+                Set_Quantum(quantum_processes[proc_exec[i]-1]);
+                processes[proc_exec[i]-1] = Call_Process(processes[proc_exec[i]-1], addr*(proc_exec[i]));
+            }
+            i = i + 1;
+        }
+        i = 0;
+        Set_LCD(i);
+    }
+
+    i = 0;
+    while(i < qnty){
+        Clear_Ram(addr*proc_exec[i]); 
+        i = i + 1;
+    }
+}
+
+void change_indexes(void){
+    int i; int j; int temp;
+
+    Set_LCD(12);
+    i = input();
+
+    Set_LCD(13);
+    j = input();
+
+    temp = indexes[i-1];
+    indexes[i-1] = indexes[j-1];
+    indexes[j-1] = temp;
+}
+
+void main(void){
+    
+    int i;
+    int choice;
+
+    choice = 3;
+
+    init();
+    while(choice != 0){
+        choice = menu();
+        if(choice == 1){exec_processes();}
+        if(choice == 2){change_indexes();}
+        if(choice == 0){Set_LCD(14);}
+    }
+}

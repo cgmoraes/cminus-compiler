@@ -125,17 +125,16 @@ def genAsm(file):
                                 asm.write(f"GETADDR $t{range_reg[1]-4}\n")
                                 params_reg.pop(0)
                                 params_reg.pop(0)
+                            case "Set_LCD":
+                                asm.write(f"SETLCD $t{params_reg[0]}\n")
+                                params_reg.pop(0)
                             case "Set_Quantum":
                                 asm.write(f"SETQUANTUM $t{params_reg[0]}\n")
                                 params_reg.pop(0)
-                            case "Get_Address":
-                                pass
-                            case "Reg_To_Ram":
-                                pass
-                                #params_reg.pop(0)
-                            case "Ram_To_Reg":
-                                pass
-                                #params_reg.pop(0)
+                            case "Clear_Ram":
+                                for i in range(16):
+                                    asm.write(f"SW $t{params_reg[0]} $t{range_reg[0]} {i}\n")
+                                params_reg.pop(0)
                             case _:
                                 ## Empilha
                                 for i, r in enumerate(reg[range_reg[0]:range_reg[1]].copy()):

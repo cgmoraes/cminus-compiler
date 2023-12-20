@@ -239,7 +239,8 @@ static void genStmt( TreeNode * tree)
 
           // if(!strcmp(tree->attr.name,"Call_Process")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
           if(!strcmp(tree->attr.name,"Set_Quantum")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
-          // else if(!strcmp(tree->attr.name,"Get_Address")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          else if(!strcmp(tree->attr.name,"Set_LCD")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          else if(!strcmp(tree->attr.name,"Clear_Ram")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
           // else if(!strcmp(tree->attr.name,"Reg_To_Ram")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
           // else if(!strcmp(tree->attr.name,"Ram_To_Reg")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
 

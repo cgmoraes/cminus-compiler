@@ -44,6 +44,7 @@ op = {
         "IN": "100001",
         "OUT": "110001",
         "CALLPROCESS": "101001",
+        "SETLCD": "101101",
         "SETQUANTUM": "101111",
         "GETADDR": "100111"
     }
@@ -68,6 +69,7 @@ with open(f"{file}.bin", "w") as b:
                     case "OUT": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
                     case "HALT": b.write(f"{op[quad[0]][process_type]}{format(0,'026b')}\n")
                     case "CALLPROCESS": b.write(f"{op[quad[0]]}{regs[quad[1]]}{regs[quad[2]]}{format(0,'016b')}\n")
+                    case "SETLCD": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
                     case "SETQUANTUM": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
                     case "GETADDR": b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
                     case _: b.write(f"{quad[0]}\n")

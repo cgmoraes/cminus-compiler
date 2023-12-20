@@ -1,0 +1,17 @@
+
+int restoDaDivisao(int dividendo, int divisor) {
+    return dividendo - divisor * (dividendo / divisor);
+}
+
+void main(void) {
+    int dividendo;
+    int divisor;
+
+    dividendo = input();
+
+    divisor = input();
+
+    if (divisor != 0) {
+        output(restoDaDivisao(dividendo, divisor));
+    } 
+}
