@@ -33,6 +33,9 @@ for arquivo in "$@"; do
 
     python3 compiler/agen.py "$SO" "$arquivo"
     python3 compiler/bgen.py "$SO" "$arquivo" "$linhas"
+    python3 compiler/concat.py "$arquivo"
+    rm "$arquivo.bin"
+    rm "$arquivo.ic"
 
     if [ "$SO" = 1 ]; then     
       SO=0
@@ -43,18 +46,15 @@ for arquivo in "$@"; do
 done
 
 rm compiler/symtab.csv
+extensoes=("out" "asm")
 
-# tipo="$1"
-# arquivo="$2"
-# extensoes=("out" "ic" "asm" "bin")
+extensoes_find=""
+for extensao in "${extensoes[@]}"; do
+  extensoes_find+=" -name '*.$extensao' -o"
+done
+extensoes_find=${extensoes_find::-3} 
 
-# extensoes_find=""
-# for extensao in "${extensoes[@]}"; do
-#   extensoes_find+=" -name '*.$extensao' -o"
-# done
-# extensoes_find=${extensoes_find::-3} 
-
-# eval "find . -type f \( $extensoes_find \) -delete"
+eval "find . -type f \( $extensoes_find \) -delete"
 
 # cd compiler
 # make
