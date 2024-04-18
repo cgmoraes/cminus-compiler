@@ -46,7 +46,9 @@ op = {
         "CALLPROCESS": "101001",
         "SETLCD": "101101",
         "SETQUANTUM": "101111",
-        "GETADDR": "100111"
+        "GETADDR": "100111",
+        "SETPOS": "011110",
+        "PRINT": "110111"
     }
 
 with open(f"{file}.bin", "w") as b:
@@ -72,6 +74,8 @@ with open(f"{file}.bin", "w") as b:
                     case "SETLCD": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
                     case "SETQUANTUM": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
                     case "GETADDR": b.write(f"{op[quad[0]]}{format(0,'026b')}\n")
+                    case "SETPOS": b.write(f"{op[quad[0]]}{regs[quad[1]]}{regs[quad[2]]}{format(0,'016b')}\n")
+                    case "PRINT": b.write(f"{op[quad[0]]}{regs[quad[1]]}{format(0,'021b')}\n")
                     case _: b.write(f"{quad[0]}\n")
 
     for i in range(num_line+1, lines):

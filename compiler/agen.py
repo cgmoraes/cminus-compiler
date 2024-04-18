@@ -135,6 +135,38 @@ def genAsm(file):
                                 for i in range(16):
                                     asm.write(f"SW $t{params_reg[0]} $t{range_reg[0]} {i}\n")
                                 params_reg.pop(0)
+                            case "Print":
+                                word = " ".join(quad[3:-2]).replace("'", "").upper()
+                                word_id = []
+                                
+                                for w in word:
+                                    if ord(w) == 32:
+                                        word_id.append(0)
+                                    elif ord(w) < 65:
+                                        word_id.append(ord(w)-21)
+                                    else:
+                                        word_id.append(ord(w)-64)
+
+                                y = int(quad[-2])
+                                x = int(quad[-1])
+
+                                for i, idx in enumerate(word_id):
+                                    if i != 0 and x > 0: asm.write(f"ADDI $t{params_reg[0]} $t{params_reg[0]} {1}\n")
+                                    asm.write(f"SETPOS $t{params_reg[1]} $t{params_reg[0]}\n")
+                                    asm.write(f"ADDI $t{range_reg[0]} $t{params_reg[2]} {idx}\n")
+                                    asm.write(f"PRINT $t{params_reg[2]}\n")
+
+                                    x += 1
+                                    if x == 80:
+                                        if y == 59: break
+                                        x = 0
+                                        y += 1
+                                        asm.write(f"ADDI $t{range_reg[0]} $t{params_reg[0]} 0\n")
+                                        asm.write(f"ADDI $t{params_reg[1]} $t{params_reg[1]} 1\n")
+
+                                params_reg.pop(0)
+                                params_reg.pop(0)
+                                params_reg.pop(0)
                             case _:
                                 ## Empilha
                                 for i, r in enumerate(reg[range_reg[0]:range_reg[1]].copy()):

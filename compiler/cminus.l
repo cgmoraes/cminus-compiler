@@ -18,6 +18,7 @@ numero         {digito}+
 identificador  {letra}+(({digito}|[_])*+{letra}*)*
 novalinha      \n
 espacobranco   [ \t\r]+
+palavra        '([^'\\]*(?:\\.[^'\\]*)*)'
 
 
 %%
@@ -52,6 +53,7 @@ espacobranco   [ \t\r]+
 {espacobranco}  {}
 {novalinha} {lineno++;}
 {identificador} {return ID;}
+{palavra} {return STR;}
 {numero}  {return NUM;}
 "/*" { char c;
       int line=lineno;

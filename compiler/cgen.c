@@ -11,7 +11,7 @@
 #include "symtab.h"
 #include "cgen.h"
 
-static int indexR = 0;
+static int indexR = 1;
 static int indexL = -1;
 static int r28 = 0;
 static void cGen( TreeNode * tree);
@@ -106,6 +106,8 @@ static void genExp( TreeNode * tree)
       fprintf(code, "\n");
       break; /* OpK */
 
+    case StrK:
+      break;
     default:
       break;
   }
@@ -236,13 +238,10 @@ static void genStmt( TreeNode * tree)
             } 
           }
 
-
-          // if(!strcmp(tree->attr.name,"Call_Process")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
           if(!strcmp(tree->attr.name,"Set_Quantum")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
           else if(!strcmp(tree->attr.name,"Set_LCD")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
           else if(!strcmp(tree->attr.name,"Clear_Ram")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
-          // else if(!strcmp(tree->attr.name,"Reg_To_Ram")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
-          // else if(!strcmp(tree->attr.name,"Ram_To_Reg")){ fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i); break; }
+          else if(!strcmp(tree->attr.name,"Print")){ fprintf(code, "CALL $t28 %s %s %d %d\n", tree->attr.name, tree->child[0]->attr.name, tree->child[0]->sibling->attr.val, tree->child[0]->sibling->sibling->attr.val); break; }
 
           fprintf(code, "CALL $t28 %s %d\n", tree->attr.name, i);
           r28 = indexR;

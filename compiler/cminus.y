@@ -19,7 +19,7 @@ int yyerror(char *msg);
 %token MAIS MENOS VEZES SOBRE
 %token MENORQ MENORI MAIORQ MAIORI IGUAL DIF
 %token PONVIR VIRG EPAREN DPAREN ECOLCH DCOLCH ECHAVE DCHAVE RECEBE
-%token ID NUM
+%token ID NUM STR
 %token ACOM ERROR
 
 %% /* Grammar for Cminus */
@@ -443,12 +443,26 @@ arg_lista : arg_lista VIRG exp
             YYSTYPE t = $1;
             if(t != NULL){
               while(t->sibling != NULL)
-              t = t->sibling;
+                t = t->sibling;
+              t->sibling = $3;
+              $$ = $1;
+            } else $$ = $3;
+          }
+          | arg_lista VIRG string
+          {
+            YYSTYPE t = $1;
+            if(t != NULL){
+              while(t->sibling != NULL)
+                t = t->sibling;
               t->sibling = $3;
               $$ = $1;
             } else $$ = $3;
           }
           | exp
+          {
+            $$ = $1;
+          }
+          | string
           {
             $$ = $1;
           }
@@ -465,6 +479,12 @@ num : NUM
         $$->attr.val = atoi(tokenString);
         $$->type = IntegerK;
       }
+;
+string: STR
+       {
+         $$ = newExpNode(StrK);
+         $$->attr.name = copyString(tokenString);
+       }
 ;
 
 %%

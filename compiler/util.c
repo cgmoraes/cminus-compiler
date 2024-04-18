@@ -44,6 +44,7 @@ void printToken( TokenType token, const char* tokenString )
     case ENDFILE: fprintf(listing,"FIMARQV\n"); break;
     case NUM: fprintf(listing,"NUM, val= %s\n",tokenString); break;
     case ID: fprintf(listing,"ID, name= %s\n",tokenString); break;
+    case STR: fprintf(listing,"STR, string= %s\n",tokenString); break;
     case ERROR: fprintf(listing,"%s\n",tokenString); break;
     case ACOM: fprintf(listing,"*/\n"); break;
     default: fprintf(listing,"Unknown token: %d\n",token);    
@@ -179,6 +180,9 @@ void printTree( TreeNode * tree )
           break;
         case TypeK:
           fprintf(listing,"Type: %s\n",tree->attr.name);
+          break;
+        case StrK:
+          fprintf(listing,"String: %s\n",tree->attr.name);
           break;
         default:
           fprintf(listing,"Unknown ExpNode kind\n");

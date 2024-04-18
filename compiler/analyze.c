@@ -99,7 +99,9 @@ static void insertNode( TreeNode * t)
     break;
     case ExpK:
       switch (t->kind.exp)
-      {case IdK:
+      {case StrK:
+          break;
+        case IdK:
           {
             BucketList l = st_lookup(t->attr.scope, t->attr.name);
             if (l == NULL) typeError(t, "Error 1: Not declared");
@@ -190,6 +192,7 @@ void buildSymtab(TreeNode * syntaxTree)
   st_insert(NULL, "global", "Set_Quantum", "void", 0, 0, 0);
   st_insert(NULL, "global", "Set_LCD", "void", 0, 0, 0);
   st_insert(NULL, "global", "Clear_Ram", "void", 0, 0, 0);
+  st_insert(NULL, "global", "Print", "void", 0, 0, 0);
   traverse(syntaxTree, insertNode, nullProc);
 }
 
